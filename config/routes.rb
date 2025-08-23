@@ -6,7 +6,11 @@ Rails.application.routes.draw do
   get '/auth/me', to: 'auth#me'
   
   # Instagram accounts
-  resources :instagram_accounts, only: [:index, :show, :create, :destroy]
+  resources :instagram_accounts, only: [:index, :show, :create, :destroy] do
+    collection do
+      post 'connect'
+    end
+  end
   
   # Automations
   resources :automations

@@ -1,7 +1,11 @@
 class ApplicationController < ActionController::API
   include ActionController::Cookies
   
-  before_action :authenticate_user!, except: [:create, :login]
+  before_action :authenticate_user!, except: [:create, :login, :health]
+  
+  def health
+    render json: { status: 'ok', timestamp: Time.current }
+  end
   
   private
   
