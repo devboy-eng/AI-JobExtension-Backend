@@ -14,6 +14,13 @@ module InstagramAutomation
     config.load_defaults 7.1
     config.api_only = true
     
+    # Fix autoloading for models
+    config.eager_load_paths += %W(#{config.root}/app/models)
+    
+    # Initialize logger early to fix console issue
+    config.logger = ActiveSupport::Logger.new(STDOUT)
+    config.log_level = :info
+    
     config.middleware.insert_before 0, Rack::Cors do
       allow do
         origins 'http://localhost:3000'

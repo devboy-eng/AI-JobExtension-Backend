@@ -52,7 +52,12 @@ class AuthController < ApplicationController
   private
   
   def user_params
-    params.require(:user).permit(:email, :password, :first_name, :last_name)
+    # Accept both nested and non-nested parameter formats
+    if params[:user]
+      params.require(:user).permit(:email, :password, :first_name, :last_name)
+    else
+      params.permit(:email, :password, :first_name, :last_name)
+    end
   end
   
   def user_response(user)
