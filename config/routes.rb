@@ -29,6 +29,169 @@ Rails.application.routes.draw do
   get '/referral-stats', to: 'referrals#stats'
   get '/referrals', to: 'referrals#index'
   
+  # Admin routes
+  namespace :admin do
+    # Admin authentication
+    post '/auth/login', to: 'auth#login'
+    delete '/auth/logout', to: 'auth#logout'
+    get '/auth/me', to: 'auth#me'
+    post '/auth/refresh', to: 'auth#refresh'
+    
+    # Admin dashboard
+    get '/dashboard', to: 'dashboard#index'
+    get '/dashboard/stats', to: 'dashboard#stats'
+    get '/dashboard/charts', to: 'dashboard#charts'
+    get '/dashboard/recent_activity', to: 'dashboard#recent_activity'
+    
+    # User management
+    resources :users, only: [:index, :show, :create, :update, :destroy] do
+      member do
+        patch 'suspend'
+        patch 'activate'
+        patch 'change_plan'
+        get 'activity_logs'
+        post 'send_notification'
+      end
+      collection do
+        get 'export'
+        get 'search'
+        get 'analytics'
+      end
+    end
+    
+    # Role and permission management
+    resources :roles do
+      member do
+        patch 'activate'
+        patch 'deactivate'
+      end
+      resources :permissions, only: [:index, :create, :destroy], controller: 'role_permissions'
+    end
+    
+    resources :permissions, only: [:index, :show]
+    
+    # Analytics
+    resources :analytics, only: [:index] do
+      collection do
+        get 'users'
+        get 'instagram_accounts'
+        get 'automations'
+        get 'usage_metrics'
+        get 'revenue'
+        get 'export'
+      end
+    end
+    
+    # Settings management
+    resources :settings, only: [:index] do
+      collection do
+        patch 'update'
+        patch 'bulk_update'
+        patch 'reset_to_defaults'
+        get 'export'
+        post 'import'
+      end
+    end
+    
+    # Instagram account management
+    resources :instagram_accounts, only: [:index, :show, :update, :destroy] do
+      member do
+        patch 'verify'
+        patch 'suspend'
+        patch 'activate'
+      end
+      collection do
+        get 'search'
+        get 'analytics'
+        get 'export'
+      end
+    end
+    
+    # Automation management
+    resources :automations, only: [:index, :show, :update, :destroy] do
+      member do
+        patch 'start'
+        patch 'stop'
+        patch 'pause'
+        patch 'resume'
+      end
+      collection do
+        get 'search'
+        get 'analytics'
+        get 'export'
+      end
+    end
+    
+    # Contact management
+    resources :contacts, only: [:index, :show, :update, :destroy] do
+      collection do
+        get 'search'
+        get 'export'
+        post 'import'
+        patch 'bulk_update'
+        delete 'bulk_destroy'
+      end
+    end
+    
+    # Usage metrics
+    resources :usage_metrics, only: [:index, :show, :destroy] do
+      collection do
+        get 'analytics'
+        get 'export'
+        get 'real_time'
+      end
+    end
+    
+    # Admin user management
+    resources :admin_users, except: [:show] do
+      member do
+        patch 'activate'
+        patch 'deactivate'
+        patch 'change_role'
+        patch 'reset_password'
+      end
+      collection do
+        get 'search'
+      end
+    end
+    
+    # Audit logs
+    resources :admin_logs, only: [:index, :show] do
+      collection do
+        get 'export'
+        get 'search'
+      end
+    end
+    
+    resources :user_logs, only: [:index, :show] do
+      collection do
+        get 'export'
+        get 'search'
+      end
+    end
+    
+    # System management
+    namespace :system do
+      get 'status'
+      get 'health'
+      post 'maintenance_mode'
+      post 'clear_cache'
+      post 'backup'
+      get 'logs'
+    end
+    
+    # Reports
+    namespace :reports do
+      get 'user_activity'
+      get 'revenue'
+      get 'usage'
+      get 'performance'
+      get 'security'
+      post 'generate'
+      get 'download/:id', to: 'base#download'
+    end
+  end
+  
   # Health check
   get '/health', to: 'application#health'
 end
