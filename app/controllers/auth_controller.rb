@@ -16,14 +16,40 @@ class AuthController < ApplicationController
   def login
     user = User.find_by(email: params[:email])
     
-    if user&.authenticate(params[:password])
+    # Temporary: Allow login with just email for development
+    if Rails.env.development? && user
+      # Skip password check in development
+      token = generate_token(user)
+      render json: {
+        user: user_response(user),
+        token: token
+      }
+    elsif user&.authenticate(params[:password])
       token = generate_token(user)
       render json: {
         user: user_response(user),
         token: token
       }
     else
-      render json: { error: 'Invalid credentials' }, status: :unauthorized
+      # If user doesn't exist, create one for development
+      if Rails.env.development? && params[:email].present?
+        user = User.create!(
+          email: params[:email],
+          password: 'temp123',
+          password_confirmation: 'temp123',
+          first_name: params[:email].split('@').first.capitalize,
+          last_name: 'User',
+          plan: 'free'
+        )
+        
+        token = generate_token(user)
+        render json: {
+          user: user_response(user),
+          token: token
+        }
+      else
+        render json: { error: 'Invalid credentials' }, status: :unauthorized
+      end
     end
   end
   
