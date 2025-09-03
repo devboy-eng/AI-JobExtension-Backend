@@ -192,6 +192,12 @@ Rails.application.routes.draw do
     end
   end
   
+  # Instagram testing endpoints (development only)
+  if Rails.env.development?
+    get '/test/instagram/config', to: 'instagram_test#test_config'
+    post '/test/instagram/token', to: 'instagram_test#test_token_exchange'
+  end
+  
   # Health check
   get '/health', to: 'application#health'
 end
