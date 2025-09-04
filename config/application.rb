@@ -23,7 +23,7 @@ module InstagramAutomation
     
     config.middleware.insert_before 0, Rack::Cors do
       allow do
-        origins 'http://localhost:3000'
+        origins 'http://localhost:3000', 'https://0b99060de805.ngrok-free.app'
         resource '*',
           headers: :any,
           methods: [:get, :post, :put, :patch, :delete, :options, :head],

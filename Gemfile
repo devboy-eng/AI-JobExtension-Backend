@@ -1,7 +1,7 @@
 source "https://rubygems.org"
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-ruby "3.3.7"
+ruby "3.2.0"
 
 gem "rails", "~> 7.1.0"
 gem "pg", "~> 1.1"
@@ -14,6 +14,7 @@ gem "redis", "~> 4.0"
 gem "sidekiq"
 gem "instagram_basic_display"
 gem "faraday"
+gem "dotenv-rails"
 
 group :development, :test do
   gem "byebug", platforms: [:mri, :mingw, :x64_mingw]

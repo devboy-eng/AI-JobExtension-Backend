@@ -194,6 +194,9 @@ Rails.application.routes.draw do
   
   # Instagram testing endpoints (development only)
   if Rails.env.development?
+    get '/debug/instagram/config', to: 'instagram_test#debug_config'
+    get '/debug/instagram/setup-guide', to: 'instagram_test#setup_guide'
+    get '/debug/instagram/validate', to: 'instagram_test#validate_oauth_url'
     get '/test/instagram/config', to: 'instagram_test#test_config'
     post '/test/instagram/token', to: 'instagram_test#test_token_exchange'
   end

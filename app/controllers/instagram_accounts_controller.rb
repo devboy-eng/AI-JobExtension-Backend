@@ -68,11 +68,11 @@ class InstagramAccountsController < ApplicationController
       Rails.logger.info "Using client_id: #{ENV['INSTAGRAM_CLIENT_ID']}"
       Rails.logger.info "Using redirect_uri: #{ENV['INSTAGRAM_REDIRECT_URI']}"
       
-      # Step 1: Exchange code for short-lived access token using Instagram Basic Display API
-      response = Faraday.post("https://api.instagram.com/oauth/access_token") do |req|
+      # Step 1: Exchange code for Facebook access token (Instagram Business API)
+      response = Faraday.post("https://graph.facebook.com/v18.0/oauth/access_token") do |req|
         req.headers['Content-Type'] = 'application/x-www-form-urlencoded'
         req.body = {
-          client_id: ENV['INSTAGRAM_CLIENT_ID'],
+          client_id: ENV['FACEBOOK_APP_ID'],
           client_secret: ENV['INSTAGRAM_CLIENT_SECRET'],
           grant_type: 'authorization_code',
           redirect_uri: ENV['INSTAGRAM_REDIRECT_URI'],
@@ -97,36 +97,53 @@ class InstagramAccountsController < ApplicationController
       end
       
       token_data = JSON.parse(response.body)
+      facebook_token = token_data['access_token']
+      expires_in = token_data['expires_in'] || 7200 # 2 hours default for Facebook tokens
       
-      # Step 2: Exchange short-lived token for long-lived token
-      long_lived_response = Faraday.get("https://graph.instagram.com/access_token") do |req|
+      # Step 2: Get Instagram Business Accounts from Facebook Pages
+      pages_response = Faraday.get("https://graph.facebook.com/v18.0/me/accounts") do |req|
         req.params = {
-          grant_type: 'ig_exchange_token',
-          client_secret: ENV['INSTAGRAM_CLIENT_SECRET'],
-          access_token: token_data['access_token']
+          fields: 'id,name,instagram_business_account{id,username,name,profile_picture_url,followers_count}',
+          access_token: facebook_token
         }
       end
       
-      if long_lived_response.success?
-        long_lived_data = JSON.parse(long_lived_response.body)
-        final_token = long_lived_data['access_token']
-        expires_in = long_lived_data['expires_in'] || 5184000 # 60 days default
-      else
-        Rails.logger.warn "Long-lived token exchange failed, using short-lived token"
-        final_token = token_data['access_token']
-        expires_in = 3600 # 1 hour for short-lived tokens
+      instagram_account = nil
+      if pages_response.success?
+        pages_data = JSON.parse(pages_response.body)
+        # Find the Instagram Business Account (matching your user ID: 24259081400439109)
+        pages_data['data']&.each do |page|
+          if page['instagram_business_account']
+            ig_account = page['instagram_business_account']
+            # Check if this matches your Instagram Business Account ID
+            if ig_account['id'] == '24259081400439109'
+              instagram_account = ig_account
+              instagram_account['page_name'] = page['name']
+              break
+            end
+          end
+        end
       end
       
-      # Step 3: Get user profile information
-      profile_response = Faraday.get("https://graph.instagram.com/me") do |req|
-        req.params = {
-          fields: 'id,username,account_type,media_count',
-          access_token: final_token
-        }
+      if instagram_account.nil?
+        return render json: { 
+          error: 'Instagram Business Account not found',
+          message: 'Expected Instagram Business Account ID: 24259081400439109 not found in your Facebook Pages'
+        }, status: :unprocessable_entity
       end
       
-      if profile_response.success?
-        profile_data = JSON.parse(profile_response.body)
+      # Step 3: Use the Instagram Business Account data directly
+      profile_data = {
+        'id' => instagram_account['id'],
+        'username' => instagram_account['username'],
+        'name' => instagram_account['name'],
+        'account_type' => 'BUSINESS',
+        'profile_picture_url' => instagram_account['profile_picture_url'],
+        'followers_count' => instagram_account['followers_count']
+      }
+      
+      # Skip profile_response check since we already have the data
+      Rails.logger.info "Found Instagram Business Account: #{profile_data['username']} (ID: #{profile_data['id']})"
         
         # Create or update Instagram account
         account = current_user.instagram_accounts.find_or_initialize_by(
@@ -135,9 +152,9 @@ class InstagramAccountsController < ApplicationController
         
         account.assign_attributes(
           username: profile_data['username'],
-          access_token: final_token,
-          account_type: profile_data['account_type'] || 'PERSONAL',
-          media_count: profile_data['media_count'] || 0,
+          access_token: facebook_token, # Store Facebook token for Instagram Business API access
+          account_type: 'BUSINESS',
+          media_count: 0, # Will be updated when we fetch media
           token_expires_at: Time.current + expires_in.seconds,
           connected_at: Time.current,
           status: 'active'
