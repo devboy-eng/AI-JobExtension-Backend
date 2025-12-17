@@ -1,28 +1,16 @@
 class InstagramAccount < ApplicationRecord
   belongs_to :user
-  has_many :automations, dependent: :destroy
   
-  validates :instagram_user_id, presence: true, uniqueness: true
-  validates :username, presence: true
-  validates :access_token, presence: true
+  validates :instagram_user_id, :username, :access_token, presence: true
+  validates :instagram_user_id, uniqueness: { scope: :user_id }
   
-  def refresh_access_token!
-    # Instagram Basic Display API token refresh logic
-    response = Faraday.post("https://graph.instagram.com/refresh_access_token") do |req|
-      req.params['grant_type'] = 'ig_refresh_token'
-      req.params['access_token'] = access_token
-    end
-    
-    if response.success?
-      data = JSON.parse(response.body)
-      update!(
-        access_token: data['access_token'],
-        token_expires_at: Time.current + data['expires_in'].seconds
-      )
-    end
-  end
+  scope :active, -> { where('token_expires_at > ?', Time.current) }
   
   def token_expired?
-    token_expires_at && token_expires_at < Time.current
+    token_expires_at && token_expires_at <= Time.current
+  end
+  
+  def expires_soon?
+    token_expires_at && token_expires_at <= 7.days.from_now
   end
 end

@@ -15,7 +15,6 @@ class CreateAdminLogs < ActiveRecord::Migration[7.1]
     add_index :admin_logs, [:target_type, :target_id]
     add_index :admin_logs, :action
     add_index :admin_logs, :created_at
-    add_index :admin_logs, :admin_user_id
     add_index :admin_logs, :ip_address
   end
 end

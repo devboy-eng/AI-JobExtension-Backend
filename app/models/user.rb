@@ -6,6 +6,7 @@ class User < ApplicationRecord
   has_many :contacts, dependent: :destroy
   has_many :usage_metrics, dependent: :destroy
   has_many :user_logs, dependent: :destroy
+  has_many :links, dependent: :destroy
   has_many :referrals, class_name: 'User', foreign_key: 'referred_by'
   belongs_to :referrer, class_name: 'User', foreign_key: 'referred_by', optional: true
   

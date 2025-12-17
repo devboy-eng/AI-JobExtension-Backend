@@ -1,21 +1,27 @@
 development:
   adapter: postgresql
   encoding: unicode
-  pool: 5
-  database: instagram_automation_development
-  username: mahadev-bhat
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  host: localhost
+  port: 5432
+  username: <%= ENV['USER'] %>
+  database: chat_automation
 
 test:
   adapter: postgresql
   encoding: unicode
-  pool: 5
-  database: instagram_automation_test
-  username: mahadev-bhat
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  host: localhost
+  port: 5432
+  username: <%= ENV['USER'] %>
+  database: chat_automation_test
 
 production:
   adapter: postgresql
   encoding: unicode
-  pool: 5
-  database: instagram_automation_production
-  username: instagram_automation
-  password: <%= ENV["INSTAGRAM_AUTOMATION_DATABASE_PASSWORD"] %>
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  host: dpg-d2th7l95pdvs739iscqg-a
+  port: 5432
+  username: chat_automation_user
+  password: 4GhOKkK0eSLvcl4RXG8leb3OSaSVAj2I
+  database: chat_automation
