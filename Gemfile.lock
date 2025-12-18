@@ -91,9 +91,18 @@ GEM
     crass (1.0.6)
     date (3.4.1)
     diff-lcs (1.6.2)
+<<<<<<< HEAD
     dotenv (3.1.8)
     dotenv-rails (3.1.8)
       dotenv (= 3.1.8)
+=======
+    docx (0.10.0)
+      nokogiri (~> 1.13, >= 1.13.0)
+      rubyzip (>= 2.0, < 4)
+    dotenv (3.2.0)
+    dotenv-rails (3.2.0)
+      dotenv (= 3.2.0)
+>>>>>>> 90e563b (Update Rails backend for Chrome extension integration)
       railties (>= 6.1)
     drb (2.2.3)
     erb (5.0.2)
@@ -269,10 +278,17 @@ DEPENDENCIES
   bcrypt (~> 3.1.7)
   bootsnap (>= 1.4.4)
   byebug
+<<<<<<< HEAD
   dotenv-rails
   factory_bot_rails
   faraday
   instagram_basic_display
+=======
+  docx
+  dotenv-rails
+  grover
+  httparty
+>>>>>>> 90e563b (Update Rails backend for Chrome extension integration)
   jwt
   listen (~> 3.3)
   pg (~> 1.1)
