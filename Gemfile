@@ -15,6 +15,11 @@ gem "sidekiq"
 gem "instagram_basic_display"
 gem "faraday"
 gem "dotenv-rails"
+gem "wicked_pdf"
+gem "wkhtmltopdf-binary"
+gem "htmltoword"
+gem "pdf-reader"
+gem "ruby-openai"
 
 group :development, :test do
   gem "byebug", platforms: [:mri, :mingw, :x64_mingw]

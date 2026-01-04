@@ -17,6 +17,16 @@ class User < ApplicationRecord
   enum plan: { free: 0, pro: 1, monthly_pro: 2, annual_pro: 3, custom: 4 }
   
   before_create :generate_referral_code
+  before_create :initialize_profile_data
+  
+  # Helper methods for profile data
+  def get_profile_field(field)
+    (profile_data || {})[field.to_s]
+  end
+  
+  def set_profile_field(field, value)
+    self.profile_data = (profile_data || {}).merge(field.to_s => value)
+  end
   
   def current_month_dm_count
     usage_metrics.where(
@@ -82,5 +92,9 @@ class User < ApplicationRecord
       self.referral_code = SecureRandom.hex(4).upcase
       break unless User.exists?(referral_code: referral_code)
     end
+  end
+  
+  def initialize_profile_data
+    self.profile_data ||= {}
   end
 end

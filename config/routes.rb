@@ -1,4 +1,43 @@
 Rails.application.routes.draw do
+  # API routes for Chrome extension
+  namespace :api do
+    namespace :auth do
+      post 'signup', to: '/auth#create'
+      post 'login', to: '/auth#login'
+      get 'profile', to: '/auth#profile'
+    end
+    
+    # Profile routes
+    get 'profile', to: '/auth#profile'
+    post 'profile', to: '/auth#update_profile'
+    
+    # Resume parsing routes
+    post 'parse-resume', to: '/auth#parse_resume'
+    
+    # AI customization routes
+    namespace :ai do
+      post 'customize', to: '/auth#customize_resume'
+    end
+    
+    # Download routes
+    namespace :download do
+      post 'pdf', to: '/auth#download_pdf'
+      post 'doc', to: '/auth#download_doc'
+    end
+    
+    # Coin management routes
+    namespace :coins do
+      get 'balance', to: '/auth#coin_balance'
+      get 'transactions', to: '/auth#coin_transactions'
+    end
+    
+    # Customization history routes
+    get 'customization-history', to: '/auth#get_customization_history'
+    post 'customization-history', to: '/auth#save_customization_history'
+    delete 'customization-history/:id', to: '/auth#delete_customization_history'
+    get 'customization-history/:id/pdf', to: '/auth#download_history_pdf'
+  end
+
   # Authentication routes
   post '/auth/register', to: 'auth#create'
   post '/auth/login', to: 'auth#login'

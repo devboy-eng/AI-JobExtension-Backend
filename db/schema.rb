@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_09_09_042732) do
+ActiveRecord::Schema[7.1].define(version: 2025_12_18_061558) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -182,6 +182,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_09_09_042732) do
     t.integer "referred_by"
     t.decimal "referral_earnings", precision: 10, scale: 2, default: "0.0"
     t.integer "total_referrals", default: 0
+    t.json "profile_data", default: {}
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["referral_code"], name: "index_users_on_referral_code", unique: true
     t.index ["referred_by"], name: "index_users_on_referred_by"
