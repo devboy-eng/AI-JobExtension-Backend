@@ -1,27 +1,27 @@
-development:
+default: &default
   adapter: postgresql
   encoding: unicode
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-  host: localhost
+
+development:
+  <<: *default
+  host: dpg-d5cakafgi27c739a1620-a.oregon-postgres.render.com
   port: 5432
-  username: <%= ENV['USER'] %>
-  database: chat_automation
+  database: linkedin_app_f84j
+  username: linkedin_app_f84j_user
+  password: gxm6Xa381o7sebY917sxLXVdYC4LhQ4y
 
 test:
-  adapter: postgresql
-  encoding: unicode
-  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  <<: *default
+  database: jobextension_test
   host: localhost
-  port: 5432
-  username: <%= ENV['USER'] %>
-  database: chat_automation_test
+  username: postgres
+  password: <%= ENV['DATABASE_PASSWORD'] %>
 
 production:
-  adapter: postgresql
-  encoding: unicode
-  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-  host: dpg-d2th7l95pdvs739iscqg-a
+  <<: *default
+  host: dpg-d5cakafgi27c739a1620-a
   port: 5432
-  username: chat_automation_user
-  password: 4GhOKkK0eSLvcl4RXG8leb3OSaSVAj2I
-  database: chat_automation
+  database: linkedin_app_f84j
+  username: linkedin_app_f84j_user
+  password: gxm6Xa381o7sebY917sxLXVdYC4LhQ4y
