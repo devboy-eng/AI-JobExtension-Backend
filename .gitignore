@@ -1,0 +1,38 @@
+# Dependencies
+/node_modules
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Cache
+/tmp/cache/
+
+# Log files
+*.log
+/log/*
+
+# Database
+/db/*.sqlite3
+/db/*.sqlite3-journal
+
+# Bundler
+vendor/bundle/
+
+# Temp files
+/tmp/*
+
+# System files
+.DS_Store
+.vscode/
+
+# Rails specific
+/public/assets
+/public/packs
+/config/master.key
+/storage/*
+/tmp/storage/*
+/tmp/pids/*
