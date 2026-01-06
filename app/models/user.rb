@@ -10,6 +10,7 @@ class User < ApplicationRecord
   has_many :referrals, class_name: 'User', foreign_key: 'referred_by'
   belongs_to :referrer, class_name: 'User', foreign_key: 'referred_by', optional: true
   has_one :profile, dependent: :destroy
+  has_many :resume_versions, dependent: :destroy
   
   validates :email, presence: true, uniqueness: true, format: { with: URI::MailTo::EMAIL_REGEXP }
   validates :password, length: { minimum: 6 }, if: -> { password.present? }

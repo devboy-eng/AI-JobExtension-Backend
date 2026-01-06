@@ -309,58 +309,138 @@ class AuthController < ApplicationController
 
   # Customization history endpoints
   def get_customization_history
-    user_id = current_user&.id || 'anonymous'
-    user_history = @@customization_history[user_id] || []
-    
-    render json: {
-      success: true,
-      history: user_history
-    }
+    begin
+      if current_user && ResumeVersion.table_exists?
+        # Use database storage
+        user_history = current_user.resume_versions.recent.limit(50).map do |version|
+          {
+            id: version.id,
+            jobTitle: version.job_title,
+            company: version.company,
+            postingUrl: version.posting_url,
+            atsScore: version.ats_score,
+            keywordsMatched: version.keywords_matched || [],
+            keywordsMissing: version.keywords_missing || [],
+            resumeContent: version.resume_content,
+            timestamp: version.created_at.iso8601,
+            profileSnapshot: version.profile_snapshot || {}
+          }
+        end
+      else
+        # Fallback to in-memory storage
+        user_id = current_user&.id || 'anonymous'
+        user_history = @@customization_history[user_id] || []
+      end
+      
+      render json: {
+        success: true,
+        history: user_history
+      }
+    rescue => e
+      render json: {
+        success: false,
+        message: 'Error retrieving history',
+        error: e.message
+      }, status: :internal_server_error
+    end
   end
 
   def save_customization_history
-    user_id = current_user&.id || 'anonymous'
-    
-    # Initialize user history if it doesn't exist
-    @@customization_history[user_id] ||= []
-    
-    # Create history entry from request parameters
-    history_entry = {
-      id: params[:id],
-      jobTitle: params[:jobTitle],
-      company: params[:company],
-      postingUrl: params[:postingUrl],
-      atsScore: params[:atsScore],
-      keywordsMatched: params[:keywordsMatched] || [],
-      keywordsMissing: params[:keywordsMissing] || [],
-      resumeContent: params[:resumeContent],
-      timestamp: params[:timestamp] || Time.current.iso8601,
-      profileSnapshot: params[:profileSnapshot] || {}
-    }
-    
-    # Add to user's history (keep last 50 entries)
-    @@customization_history[user_id].unshift(history_entry)
-    @@customization_history[user_id] = @@customization_history[user_id].first(50)
-    
-    render json: {
-      success: true,
-      message: 'Customization history saved',
-      entry: history_entry
-    }
+    begin
+      if current_user && ResumeVersion.table_exists?
+        # Save to database
+        resume_version = current_user.resume_versions.create!(
+          job_title: params[:jobTitle],
+          company: params[:company],
+          posting_url: params[:postingUrl],
+          ats_score: params[:atsScore],
+          keywords_matched: params[:keywordsMatched] || [],
+          keywords_missing: params[:keywordsMissing] || [],
+          resume_content: params[:resumeContent],
+          profile_snapshot: params[:profileSnapshot] || {}
+        )
+        
+        # Keep only last 50 entries per user
+        excess_versions = current_user.resume_versions.recent.offset(50)
+        ResumeVersion.where(id: excess_versions.pluck(:id)).delete_all if excess_versions.any?
+        
+        history_entry = {
+          id: resume_version.id,
+          jobTitle: resume_version.job_title,
+          company: resume_version.company,
+          postingUrl: resume_version.posting_url,
+          atsScore: resume_version.ats_score,
+          keywordsMatched: resume_version.keywords_matched || [],
+          keywordsMissing: resume_version.keywords_missing || [],
+          resumeContent: resume_version.resume_content,
+          timestamp: resume_version.created_at.iso8601,
+          profileSnapshot: resume_version.profile_snapshot || {}
+        }
+      else
+        # Fallback to in-memory storage
+        user_id = current_user&.id || 'anonymous'
+        @@customization_history[user_id] ||= []
+        
+        history_entry = {
+          id: params[:id],
+          jobTitle: params[:jobTitle],
+          company: params[:company],
+          postingUrl: params[:postingUrl],
+          atsScore: params[:atsScore],
+          keywordsMatched: params[:keywordsMatched] || [],
+          keywordsMissing: params[:keywordsMissing] || [],
+          resumeContent: params[:resumeContent],
+          timestamp: params[:timestamp] || Time.current.iso8601,
+          profileSnapshot: params[:profileSnapshot] || {}
+        }
+        
+        @@customization_history[user_id].unshift(history_entry)
+        @@customization_history[user_id] = @@customization_history[user_id].first(50)
+      end
+      
+      render json: {
+        success: true,
+        message: 'Customization history saved',
+        entry: history_entry
+      }
+    rescue => e
+      render json: {
+        success: false,
+        message: 'Error saving history',
+        error: e.message
+      }, status: :internal_server_error
+    end
   end
 
   def delete_customization_history
-    user_id = current_user&.id || 'anonymous'
-    entry_id = params[:id]
-    
-    if @@customization_history[user_id]
-      @@customization_history[user_id].reject! { |entry| entry[:id] == entry_id }
+    begin
+      entry_id = params[:id]
+      
+      if current_user && ResumeVersion.table_exists?
+        # Delete from database
+        resume_version = current_user.resume_versions.find_by(id: entry_id)
+        if resume_version
+          resume_version.destroy
+        end
+      else
+        # Fallback to in-memory storage
+        user_id = current_user&.id || 'anonymous'
+        if @@customization_history[user_id]
+          @@customization_history[user_id].reject! { |entry| entry[:id] == entry_id }
+        end
+      end
+      
+      render json: {
+        success: true,
+        message: 'Customization history deleted'
+      }
+    rescue => e
+      render json: {
+        success: false,
+        message: 'Error deleting history',
+        error: e.message
+      }, status: :internal_server_error
     end
-    
-    render json: {
-      success: true,
-      message: 'Customization history deleted'
-    }
   end
 
   def download_history_pdf
@@ -421,18 +501,86 @@ class AuthController < ApplicationController
 
   # Coin management endpoints
   def coin_balance
-    render json: {
-      success: true,
-      balance: 100,
-      free_credits: 10
-    }
+    begin
+      if current_user && User.column_names.include?('coin_balance')
+        # Use database storage
+        balance = current_user.coin_balance || 0
+        free_credits = current_user.plan == 'free' ? 10 : 0
+      else
+        # Fallback values
+        balance = 100
+        free_credits = 10
+      end
+      
+      render json: {
+        success: true,
+        balance: balance,
+        free_credits: free_credits
+      }
+    rescue => e
+      render json: {
+        success: false,
+        message: 'Error retrieving coin balance',
+        error: e.message
+      }, status: :internal_server_error
+    end
   end
 
   def coin_transactions
-    render json: {
-      success: true,
-      transactions: []
-    }
+    begin
+      # For now, return empty transactions as we don't have a transactions table yet
+      # This can be extended with a CoinTransaction model later
+      render json: {
+        success: true,
+        transactions: []
+      }
+    rescue => e
+      render json: {
+        success: false,
+        message: 'Error retrieving transactions',
+        error: e.message
+      }, status: :internal_server_error
+    end
+  end
+  
+  def update_coin_balance
+    begin
+      amount = params[:amount].to_i
+      operation = params[:operation] # 'add' or 'subtract'
+      
+      if current_user && User.column_names.include?('coin_balance')
+        case operation
+        when 'add'
+          current_user.increment!(:coin_balance, amount)
+        when 'subtract'
+          if current_user.coin_balance >= amount
+            current_user.decrement!(:coin_balance, amount)
+          else
+            return render json: {
+              success: false,
+              message: 'Insufficient coin balance'
+            }, status: :unprocessable_entity
+          end
+        end
+        
+        render json: {
+          success: true,
+          message: 'Coin balance updated',
+          balance: current_user.coin_balance
+        }
+      else
+        render json: {
+          success: false,
+          message: 'Coin balance feature not available'
+        }, status: :unprocessable_entity
+      end
+    rescue => e
+      render json: {
+        success: false,
+        message: 'Error updating coin balance',
+        error: e.message
+      }, status: :internal_server_error
+    end
   end
 
   private

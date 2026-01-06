@@ -32,6 +32,7 @@ Rails.application.routes.draw do
     namespace :coins do
       get 'balance', to: '/auth#coin_balance'
       get 'transactions', to: '/auth#coin_transactions'
+      patch 'balance', to: '/auth#update_coin_balance'
     end
     
     # Customization history routes
