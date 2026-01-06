@@ -1,4 +1,7 @@
 Rails.application.routes.draw do
+  # Root route
+  root to: proc { [200, {}, ['AI Job Extension Backend API']] }
+  
   # API routes for Chrome extension
   namespace :api do
     namespace :auth do
