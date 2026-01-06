@@ -1229,6 +1229,18 @@ class AuthController < ApplicationController
   def profile_to_hash(profile)
     return {} unless profile
     
+    work_experience = begin
+      JSON.parse(profile.work_experience || '[]')
+    rescue
+      []
+    end
+    
+    certificates = begin
+      JSON.parse(profile.certificates || '[]')
+    rescue
+      []
+    end
+    
     {
       name: profile.name,
       designation: profile.designation,
@@ -1239,8 +1251,8 @@ class AuthController < ApplicationController
       skills: profile.skills,
       education: profile.education,
       languages: profile.languages,
-      workExperience: JSON.parse(profile.work_experience || '[]') rescue [],
-      certificates: JSON.parse(profile.certificates || '[]') rescue []
+      workExperience: work_experience,
+      certificates: certificates
     }
   end
 end
