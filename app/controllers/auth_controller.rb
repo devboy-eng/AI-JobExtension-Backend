@@ -80,8 +80,10 @@ class AuthController < ApplicationController
       referral_earnings: current_user.referral_earnings
     }
     
-    # Add profile_data only if the column exists
-    if User.column_names.include?('profile_data')
+    # Get profile data from Profile model or profile_data column
+    if current_user.profile.present?
+      profile_response[:profile_data] = profile_to_hash(current_user.profile)
+    elsif User.column_names.include?('profile_data')
       profile_response[:profile_data] = current_user.profile_data || {}
     else
       profile_response[:profile_data] = {}
@@ -92,11 +94,17 @@ class AuthController < ApplicationController
   
   def update_profile
     begin
-      # Update user's profile data in the profile_data JSON field
+      # Update user's profile data
       profile_fields = params.except(:auth, :controller, :action).permit!
       
-      # Check if profile_data column exists
-      if User.column_names.include?('profile_data')
+      # Try to use Profile model first, then fallback to profile_data column
+      if update_profile_model(profile_fields)
+        render json: {
+          success: true,
+          message: 'Profile updated successfully',
+          profile_data: profile_to_hash(current_user.profile.reload)
+        }
+      elsif User.column_names.include?('profile_data')
         # Store all profile fields in the profile_data JSON field
         current_user.update!(profile_data: profile_fields.to_h)
         
@@ -1188,5 +1196,51 @@ class AuthController < ApplicationController
     end
     
     education_entries
+  end
+
+  # Helper methods for Profile model
+  def update_profile_model(profile_fields)
+    return false unless Profile.table_exists?
+    
+    profile = current_user.profile || current_user.build_profile
+    
+    # Map the incoming parameters to profile attributes
+    profile.name = profile_fields[:name] || profile_fields['name']
+    profile.designation = profile_fields[:designation] || profile_fields['designation']
+    profile.email = profile_fields[:email] || profile_fields['email']
+    profile.phone = profile_fields[:phone] || profile_fields['phone']
+    profile.address = profile_fields[:address] || profile_fields['address']
+    profile.linkedin = profile_fields[:linkedin] || profile_fields['linkedin']
+    profile.skills = profile_fields[:skills] || profile_fields['skills']
+    profile.education = profile_fields[:education] || profile_fields['education']
+    profile.languages = profile_fields[:languages] || profile_fields['languages']
+    
+    # Handle arrays as JSON strings
+    profile.work_experience = (profile_fields[:workExperience] || profile_fields['workExperience'] || []).to_json
+    profile.certificates = (profile_fields[:certificates] || profile_fields['certificates'] || []).to_json
+    
+    profile.save!
+    true
+  rescue => e
+    Rails.logger.error "Error updating profile model: #{e.message}"
+    false
+  end
+  
+  def profile_to_hash(profile)
+    return {} unless profile
+    
+    {
+      name: profile.name,
+      designation: profile.designation,
+      email: profile.email,
+      phone: profile.phone,
+      address: profile.address,
+      linkedin: profile.linkedin,
+      skills: profile.skills,
+      education: profile.education,
+      languages: profile.languages,
+      workExperience: JSON.parse(profile.work_experience || '[]') rescue [],
+      certificates: JSON.parse(profile.certificates || '[]') rescue []
+    }
   end
 end
