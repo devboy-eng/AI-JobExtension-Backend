@@ -21,10 +21,12 @@ class User < ApplicationRecord
   
   # Helper methods for profile data
   def get_profile_field(field)
+    return nil unless self.class.column_names.include?('profile_data')
     (profile_data || {})[field.to_s]
   end
   
   def set_profile_field(field, value)
+    return unless self.class.column_names.include?('profile_data')
     self.profile_data = (profile_data || {}).merge(field.to_s => value)
   end
   
@@ -95,6 +97,9 @@ class User < ApplicationRecord
   end
   
   def initialize_profile_data
-    self.profile_data ||= {}
+    # Only set profile_data if the column exists
+    if self.class.column_names.include?('profile_data')
+      self.profile_data ||= {}
+    end
   end
 end
