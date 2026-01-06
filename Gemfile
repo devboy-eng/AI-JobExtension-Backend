@@ -22,7 +22,7 @@ gem "pdf-reader"
 gem "ruby-openai"
 
 group :development, :test do
-  gem "byebug", platforms: [:mri, :mingw, :x64_mingw]
+  gem "byebug", platforms: [:mri, :windows]
   gem "rspec-rails"
   gem "factory_bot_rails"
 end
