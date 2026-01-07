@@ -4,39 +4,32 @@ Rails.application.routes.draw do
   
   # API routes for Chrome extension
   namespace :api do
-    namespace :auth do
-      post 'signup', to: '/auth#create'
-      post 'login', to: '/auth#login'
-      get 'profile', to: '/auth#profile'
-    end
-    
     # Profile routes
-    get 'profile', to: '/auth#profile'
-    post 'profile', to: '/auth#update_profile'
+    get 'profile', to: 'auth#profile'
+    post 'profile', to: 'auth#update_profile'
     
     # Resume parsing routes
-    post 'parse-resume', to: '/auth#parse_resume'
-    
-    # AI customization routes will be outside namespace
-    
-    # Download routes
-    namespace :download do
-      post 'pdf', to: '/auth#download_pdf'
-      post 'doc', to: '/auth#download_doc'
-    end
+    post 'parse-resume', to: 'auth#parse_resume'
     
     # Coin management routes
-    namespace :coins do
-      get 'balance', to: '/auth#coin_balance'
-      get 'transactions', to: '/auth#coin_transactions'
-      patch 'balance', to: '/auth#update_coin_balance'
-    end
+    get 'coins/balance', to: 'auth#coin_balance'
+    get 'coins/transactions', to: 'auth#coin_transactions'
+    patch 'coins/balance', to: 'auth#update_coin_balance'
     
     # Customization history routes
-    get 'customization-history', to: '/auth#get_customization_history'
-    post 'customization-history', to: '/auth#save_customization_history'
-    delete 'customization-history/:id', to: '/auth#delete_customization_history'
-    get 'customization-history/:id/pdf', to: '/auth#download_history_pdf'
+    get 'customization-history', to: 'auth#get_customization_history'
+    post 'customization-history', to: 'auth#save_customization_history'
+    delete 'customization-history/:id', to: 'auth#delete_customization_history'
+    get 'customization-history/:id/pdf', to: 'auth#download_history_pdf'
+    
+    # Download routes
+    post 'download/pdf', to: 'auth#download_pdf'
+    post 'download/doc', to: 'auth#download_doc'
+    
+    # Auth routes 
+    post 'auth/signup', to: 'auth#create'
+    post 'auth/login', to: 'auth#login'
+    get 'auth/profile', to: 'auth#profile'
   end
 
   # AI customization routes (outside API namespace)
