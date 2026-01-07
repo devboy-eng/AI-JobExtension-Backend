@@ -42,8 +42,7 @@ class AiController < ApplicationController
         atsScore: ats_analysis[:score],
         keywordsMatched: ats_analysis[:matched],
         keywordsMissing: ats_analysis[:missing],
-        customizationId: customization.id,
-        cssStyles: get_resume_css_styles
+        customizationId: customization.id
       })
       
     rescue => e
@@ -112,6 +111,11 @@ class AiController < ApplicationController
   def clean_html_response(response)
     # Remove markdown code blocks if present
     cleaned = response.gsub(/```html\s*/, '').gsub(/```\s*$/, '').strip
+    
+    # Remove any ATS compliance debug content that might have been included
+    cleaned = cleaned.gsub(/ATS Compliance Check.*?Keyword Match: \d+%/m, '').strip
+    cleaned = cleaned.gsub(/✓ Formatting:.*?✓ Readability:.*?Fail/m, '').strip
+    cleaned = cleaned.gsub(/ATS.*?Check.*?\d+%/m, '').strip
     
     # Extract just the HTML content between <body> tags if it's a full HTML document
     if cleaned.include?('<body>')
@@ -199,71 +203,57 @@ class AiController < ApplicationController
       - Use job-specific terminology and keywords naturally
       - Focus on results and impact, not just tasks
 
-      BETTERĈV TEMPLATE 3 - ATS-OPTIMIZED PROFESSIONAL FORMAT:
+      100% ATS-COMPLIANT CLEAN FORMAT (NO STYLING):
       
-      Use this EXACT structured layout (BetterCV Template 3 inspired):
+      Use ONLY this minimal structure for maximum ATS compatibility:
 
-      HEADER SECTION (Contact Information):
-      <div style="text-align: center; border-bottom: 2px solid #333; padding-bottom: 15px; margin-bottom: 25px;">
-        <h1 style="font-size: 24px; font-weight: bold; margin: 0; color: #333;">FULL NAME</h1>
-        <p style="font-size: 16px; font-weight: bold; margin: 8px 0; color: #555;">Target Job Title</p>
-        <p style="font-size: 12px; margin: 5px 0; color: #666;">Email: email | Phone: phone | Location: location</p>
-        <p style="font-size: 12px; margin: 5px 0; color: #666;">LinkedIn: linkedin</p>
-      </div>
-
-      PROFESSIONAL SUMMARY SECTION:
-      <h2 style="font-size: 16px; font-weight: bold; color: #333; margin: 20px 0 10px 0; text-transform: uppercase; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Professional Summary</h2>
-      <p style="font-size: 11px; line-height: 1.4; margin: 0 0 20px 0; text-align: justify;">Write 3-4 sentences that directly mirror the job requirements. Include years of experience, 
+      FULL NAME
+      Target Job Title
+      Email: email | Phone: phone | Location: location
+      LinkedIn: linkedin
+      
+      PROFESSIONAL SUMMARY
+      Write 3-4 sentences that directly mirror the job requirements. Include years of experience, 
       key expertise areas from job posting, and specific value proposition for the target role.
-      End with how you'll contribute to the specific company mentioned in job posting.</p>
+      End with how you'll contribute to the specific company mentioned in job posting.
 
-      CORE SKILLS SECTION:
-      <h2 style="font-size: 16px; font-weight: bold; color: #333; margin: 20px 0 10px 0; text-transform: uppercase; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Core Skills</h2>
-      <p style="font-size: 11px; line-height: 1.4; margin: 0 0 20px 0;">List skills as comma-separated text, prioritizing skills mentioned in job description first</p>
+      CORE SKILLS
+      List skills as comma-separated text, prioritizing skills mentioned in job description first
 
-      PROFESSIONAL EXPERIENCE SECTION:
-      <h2 style="font-size: 16px; font-weight: bold; color: #333; margin: 20px 0 10px 0; text-transform: uppercase; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Professional Experience</h2>
+      PROFESSIONAL EXPERIENCE
       
       For each job (chronological order, most recent first):
-      <div style="margin: 0 0 20px 0;">
-        <h3 style="font-size: 13px; font-weight: bold; margin: 0; color: #333;">Job Title</h3>
-        <p style="font-size: 12px; font-weight: bold; margin: 3px 0; color: #555;">Company Name | Location</p>
-        <p style="font-size: 11px; font-style: italic; margin: 3px 0 8px 0; color: #666;">Start Date - End Date</p>
-        <ul style="margin: 0; padding-left: 20px; font-size: 11px; line-height: 1.4;">
-          <li style="margin-bottom: 5px;">Generate 4-6 quantified achievements with specific metrics and results</li>
-          <li style="margin-bottom: 5px;">Start each bullet with strong action verbs: Led, Managed, Developed, Achieved, Increased, Implemented</li>
-          <li style="margin-bottom: 5px;">Include specific numbers, percentages, and business impact where logical</li>
-          <li style="margin-bottom: 5px;">Align each achievement with keywords and requirements from the job posting</li>
-          <li style="margin-bottom: 5px;">Focus on results and business value delivered, not just job duties</li>
-          <li style="margin-bottom: 5px;">Use industry-specific terminology that matches the target job description</li>
-        </ul>
-      </div>
+      Job Title
+      Company Name | Location
+      Start Date - End Date
+      • Generate 4-6 quantified achievements with specific metrics and results
+      • Start each bullet with strong action verbs: Led, Managed, Developed, Achieved, Increased, Implemented
+      • Include specific numbers, percentages, and business impact where logical
+      • Align each achievement with keywords and requirements from the job posting
+      • Focus on results and business value delivered, not just job duties
+      • Use industry-specific terminology that matches the target job description
 
-      EDUCATION SECTION:
-      <h2 style="font-size: 16px; font-weight: bold; color: #333; margin: 20px 0 10px 0; text-transform: uppercase; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Education</h2>
-      <p style="font-size: 11px; line-height: 1.4; margin: 0 0 20px 0;">[User's exact education - do not modify or add details]</p>
+      EDUCATION
+      [User's exact education - do not modify or add details]
 
-      LANGUAGES SECTION:
-      <h2 style="font-size: 16px; font-weight: bold; color: #333; margin: 20px 0 10px 0; text-transform: uppercase; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Languages</h2>
-      <p style="font-size: 11px; line-height: 1.4; margin: 0 0 20px 0;">[User's exact language list - do not add proficiency levels]</p>
+      LANGUAGES
+      [User's exact language list - do not add proficiency levels]
 
-      BETTERĈV TEMPLATE 3 ATS COMPLIANCE RULES:
-      - Use inline styles for professional formatting while maintaining ATS compatibility
-      - Include div containers with proper styling for visual appeal
-      - Standard fonts (11-16px) and conservative colors (#333, #555, #666)
-      - Chronological format with clear visual hierarchy
-      - Professional borders and spacing for readability
-      - Keywords from job description integrated naturally throughout
-      - No complex layouts, tables, or graphics that confuse ATS
-      - Clean section headers with subtle underlines
-      - Balanced design that appeals to both ATS systems and human recruiters
-      - Proper spacing and typography for professional appearance
+      CRITICAL ATS RULES:
+      - Use ONLY plain text with basic formatting
+      - NO HTML tags, styling, or complex structures
+      - NO div containers, inline styles, or CSS
+      - Simple bullet points with • character only
+      - Clean, linear text structure for ATS parsing
+      - Focus entirely on keyword optimization and content quality
 
       CRITICAL REQUIREMENTS:
       - Use ONLY user's provided education - NO fabrication
       - Use ONLY user's provided languages exactly as given
       - Keep all factual information accurate
-      - Return ONLY HTML content - no explanations
+      - Return ONLY the resume content - NO explanations, NO debug information
+      - NEVER include ATS check results, compliance scores, or debug text in the resume
+      - NEVER add phrases like "ATS Compliance Check", "Formatting:", "Keywords:", etc.
       - Focus on ATS-friendly, professional, minimalist design
       - Maximize keyword matching with job description
       - Ensure natural language flow despite keyword optimization
@@ -307,6 +297,8 @@ class AiController < ApplicationController
       6. MAINTAIN factual accuracy while maximizing relevance and ATS compatibility
 
       Generate a comprehensive, keyword-rich resume that positions this candidate as the ideal fit for the specified role.
+      
+      IMPORTANT: Return ONLY the clean resume content. Do NOT include any ATS compliance checks, debug information, or explanatory text.
     PROMPT
   end
   
@@ -503,12 +495,8 @@ class AiController < ApplicationController
   end
 
   def add_resume_styling(resume_content)
-    # Wrap in professional container matching BetterCV Template 3 style
-    <<~HTML
-      <div style="max-width: 8.5in; margin: 0 auto; padding: 1in 0.75in; font-family: Arial, sans-serif; font-size: 11px; line-height: 1.4; color: #333; background: white;">
-        #{resume_content}
-      </div>
-    HTML
+    # Return clean content without any styling for maximum ATS compatibility
+    resume_content
   end
 
   def get_resume_css_styles
