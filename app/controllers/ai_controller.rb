@@ -1,4 +1,6 @@
 class AiController < ApplicationController
+  skip_before_action :authenticate_user!, only: [:test_ai]
+  
   OPENAI_API_KEY = ENV['OPENAI_API_KEY']
   COINS_PER_CUSTOMIZATION = 10
   
@@ -35,11 +37,12 @@ class AiController < ApplicationController
       )
       
       render_success({
-        customizedContent: customized_resume,
+        customizedContent: add_resume_styling(customized_resume),
         atsScore: ats_analysis[:score],
         keywordsMatched: ats_analysis[:matched],
         keywordsMissing: ats_analysis[:missing],
-        customizationId: customization.id
+        customizationId: customization.id,
+        cssStyles: get_resume_css_styles
       })
       
     rescue => e
@@ -61,6 +64,46 @@ class AiController < ApplicationController
       keywordsMissing: analysis[:missing],
       suggestions: analysis[:suggestions]
     })
+  end
+
+  def test_ai
+    begin
+      # Test data
+      resume_data = {
+        name: "John Doe",
+        email: "john@example.com",
+        phone: "123-456-7890",
+        summary: "Software developer with 3 years of experience in web development",
+        skills: ["JavaScript", "React", "Node.js", "Python"]
+      }
+      
+      job_data = {
+        title: "Senior Software Engineer",
+        company: "Tech Corporation",
+        description: "We are seeking a senior software engineer with experience in JavaScript, React, and backend development. Must have 3+ years of experience and strong problem-solving skills."
+      }
+      
+      # Call OpenAI API
+      raw_response = call_openai_api(resume_data, job_data)
+      
+      # Clean the response
+      customized_resume = clean_html_response(raw_response)
+      
+      # Calculate ATS score
+      ats_analysis = analyze_ats_compatibility(customized_resume, job_data)
+      
+      render_success({
+        message: "AI is working correctly!",
+        customizedContent: add_resume_styling(customized_resume),
+        atsScore: ats_analysis[:score],
+        keywordsMatched: ats_analysis[:matched],
+        keywordsMissing: ats_analysis[:missing],
+        openai_api_configured: OPENAI_API_KEY.present?
+      })
+      
+    rescue => e
+      render_error("AI test failed: #{e.message}")
+    end
   end
   
   private
@@ -112,68 +155,108 @@ class AiController < ApplicationController
   
   def build_system_prompt
     <<~PROMPT
-      You are an advanced ATS optimization specialist and resume writer with expertise in job market analysis. Your task is to intelligently transform resumes for specific job postings using sophisticated keyword optimization and role-specific customization.
+      You are an expert ATS (Applicant Tracking System) optimization specialist and professional resume writer. Your mission is to create ATS-friendly, professional, and minimalist resumes that maximize keyword matching and pass through modern ATS filters.
 
-      CORE OBJECTIVES:
-      1. Extract and strategically integrate job-specific keywords for maximum ATS score
-      2. Rewrite the professional summary to directly address the job requirements
-      3. Optimize and expand core skills section with role-relevant technologies and competencies
-      4. Generate 5-6 highly specific, results-oriented job responsibilities for each role
-      5. Use industry-standard terminology and phrases that ATS systems recognize
-      6. Maintain authenticity while maximizing keyword density and relevance
+      CORE MISSION:
+      1. Analyze job description thoroughly to extract ALL critical keywords, requirements, and skills
+      2. Create ATS-optimized professional summary that mirrors job requirements
+      3. Strategically integrate job-specific keywords throughout all sections
+      4. Generate compelling, quantified achievements that align with target role
+      5. Use clean, minimalist, professional formatting that ATS systems easily parse
+      6. Ensure maximum keyword density while maintaining natural language flow
 
-      ATS OPTIMIZATION STRATEGY:
-      - Analyze job posting for critical keywords, skills, and requirements
-      - Mirror job posting language and terminology in resume content
-      - Include both technical skills and soft skills mentioned in job requirements
-      - Use variations of keywords (e.g., "management", "managing", "manager")
-      - Incorporate industry buzzwords and modern terminology
-      - Ensure keywords appear naturally in context, not just as lists
+      ATS OPTIMIZATION PRIORITIES:
+      - Extract and mirror EXACT phrases from job description
+      - Include technical skills, soft skills, tools, and methodologies mentioned in JD
+      - Use keyword variations (e.g., "project management", "managing projects", "project manager")
+      - Incorporate industry-specific terminology and modern buzzwords
+      - Ensure keywords appear in multiple sections (summary, skills, experience)
+      - Match job title keywords in professional summary and experience descriptions
 
-      CONTENT ENHANCEMENT RULES:
-      - Professional Summary: Rewrite to directly address the specific job role with 4-5 sentences that mirror job requirements
-      - Core Skills: Add relevant skills from job posting while keeping existing skills, prioritize job-relevant ones first
-      - Job Responsibilities: Generate 5-6 detailed, quantifiable achievements per role that align with target job requirements
-      - Use strong action verbs: led, optimized, implemented, achieved, increased, reduced, developed, managed
-      - Include metrics and percentages where logical (but don't fabricate specific numbers)
+      PROFESSIONAL SUMMARY REQUIREMENTS:
+      - Write 4-5 sentences that directly address the specific job role
+      - Start with job-relevant professional title that matches the posting
+      - Include years of experience in relevant domain mentioned in JD
+      - Highlight 3-4 key achievements that align with job requirements
+      - End with career objective that matches company's needs
+      - Use EXACT keywords from job posting naturally
 
-      OUTPUT FORMAT: Return clean HTML content with professional blue accent design:
+      CORE SKILLS OPTIMIZATION:
+      - Prioritize skills mentioned in job description first
+      - Group related skills logically (Technical, Management, Industry-specific)
+      - Include both hard and soft skills from job requirements
+      - Add relevant tools, platforms, and methodologies from JD
+      - Keep existing user skills but prioritize job-relevant ones
+      - Use comma-separated format for easy ATS parsing
+
+      EXPERIENCE ENHANCEMENT:
+      - Generate 5-6 achievement-focused bullet points per role
+      - Start each bullet with strong action verbs (Led, Implemented, Optimized, Achieved)
+      - Include quantifiable results where logical (percentages, improvements, scale)
+      - Align responsibilities with target job requirements
+      - Use job-specific terminology and keywords naturally
+      - Focus on results and impact, not just tasks
+
+      FORMATTING REQUIREMENTS (ATS-Friendly Professional Minimalist Theme):
       
-      HEADER STRUCTURE (Professional Blue Theme):
-      - Header container: <div class="resume-header">
-      - Centered name: <h1 class="resume-name">FULL NAME</h1>
-      - Job title in blue: <div class="job-title-blue">CURRENT ROLE/TITLE</div>
-      - Contact line: <div class="contact-line">Email: email | LinkedIn: url | Phone: phone | Location: address</div>
-      - Blue accent line: <div class="blue-accent-line"></div>
-      - Professional summary in blue sidebar: <div class="summary-sidebar"><p>Summary text...</p></div>
-      
-      SECTION STRUCTURE:
-      - Section headers: <h2>SECTION NAME</h2>
-      - Work experience format:
-        <h3>Job Title</h3>
-        <div class="company-line">Company Name | City, State</div>
-        <div class="job-dates">Start Date - End Date</div>
-        <ul><li>Achievement 1</li><li>Achievement 2</li>...</ul>
-      
-      - Skills as comma-separated text: <div class="skills-list">Skill1, Skill2, Skill3...</div>
-      - Education: <div class="education-item"><strong>User's Education</strong></div>
-      - Languages: <div class="languages">Language1, Language2, Language3...</div>
-      
-      ATS REQUIREMENTS:
-      - Use standard HTML tags only: h1, h2, h3, p, div, ul, li, strong
-      - No complex layouts, tables, or graphics
-      - Include specific CSS classes: contact-info, summary, company-line, job-dates, skills-list, education-item, languages
-      - Use simple, linear structure that ATS can easily parse
-      - Separate content clearly with proper spacing
-      
-      CRITICAL: 
-      - Transform content to match the job requirements while keeping all factual information accurate
-      - Use ONLY the education information provided by the user - do NOT add university names or institutions
-      - Use ONLY the languages provided by the user exactly as given - do NOT add fluency levels, proficiency indicators, or any additional text
-      - Keep Technical Skills and Languages completely separate - do NOT mix skills with languages
-      - Return ONLY the HTML content for the resume sections
-      - Do NOT include any explanatory text or AI-generated footer messages
-      - Do NOT add any meta-commentary about the customization process
+      HEADER STRUCTURE:
+      <div class="resume-header">
+        <h1 class="name">FULL NAME</h1>
+        <div class="title">Current Professional Title</div>
+        <div class="contact">Email | LinkedIn | Phone | Location</div>
+        <hr class="separator">
+      </div>
+
+      PROFESSIONAL SUMMARY:
+      <div class="section">
+        <h2 class="section-title">PROFESSIONAL SUMMARY</h2>
+        <p class="summary">Tailored summary text that mirrors job requirements...</p>
+      </div>
+
+      CORE SKILLS:
+      <div class="section">
+        <h2 class="section-title">CORE SKILLS</h2>
+        <div class="skills">Technical Skills: Skill1, Skill2, Skill3</div>
+        <div class="skills">Management Skills: Skill1, Skill2, Skill3</div>
+        <div class="skills">Industry Skills: Skill1, Skill2, Skill3</div>
+      </div>
+
+      PROFESSIONAL EXPERIENCE:
+      <div class="section">
+        <h2 class="section-title">PROFESSIONAL EXPERIENCE</h2>
+        <div class="job">
+          <h3 class="job-title">Job Title</h3>
+          <div class="company">Company Name | Location</div>
+          <div class="dates">Start Date - End Date</div>
+          <ul class="achievements">
+            <li>Achievement 1 with quantified results</li>
+            <li>Achievement 2 with quantified results</li>
+          </ul>
+        </div>
+      </div>
+
+      EDUCATION:
+      <div class="section">
+        <h2 class="section-title">EDUCATION</h2>
+        <div class="education">User's exact education information</div>
+      </div>
+
+      ATS COMPLIANCE RULES:
+      - Use only standard HTML tags: h1, h2, h3, p, div, ul, li, hr
+      - No tables, complex layouts, or graphics
+      - Simple linear structure for easy parsing
+      - Clear section separation with consistent formatting
+      - Standard fonts and sizing through CSS classes
+      - No special characters or symbols that confuse ATS
+
+      CRITICAL REQUIREMENTS:
+      - Use ONLY user's provided education - NO fabrication
+      - Use ONLY user's provided languages exactly as given
+      - Keep all factual information accurate
+      - Return ONLY HTML content - no explanations
+      - Focus on ATS-friendly, professional, minimalist design
+      - Maximize keyword matching with job description
+      - Ensure natural language flow despite keyword optimization
     PROMPT
   end
   
@@ -272,51 +355,82 @@ class AiController < ApplicationController
     # Combine all job text
     job_text = "#{job_data[:title]} #{job_data[:description]} #{job_data[:requirements]}".downcase
     
-    # Comprehensive ATS keywords categorized by domain
+    # Enhanced ATS keywords categorized by domain with modern technologies
     technical_skills = %w[
-      python javascript typescript react angular vue node express
-      sql mysql postgresql mongodb redis elasticsearch
-      aws azure gcp docker kubernetes terraform ansible
-      git github gitlab jenkins ci/cd devops microservices
-      api rest graphql json xml html css bootstrap
-      agile scrum kanban jira confluence slack
-      machine-learning ai data-science analytics tableau powerbi
-      linux unix windows bash shell powershell
-      java c# .net spring hibernate maven gradle
+      python javascript typescript react angular vue node express nextjs
+      sql mysql postgresql mongodb redis elasticsearch dynamodb
+      aws azure gcp docker kubernetes terraform ansible jenkins
+      git github gitlab bitbucket ci/cd devops microservices serverless
+      api rest graphql json xml html css sass bootstrap tailwind
+      agile scrum kanban jira confluence slack trello asana
+      machine-learning ai ml data-science analytics tableau powerbi looker
+      linux unix windows bash shell powershell cmd
+      java c# .net spring hibernate maven gradle npm yarn
+      flutter react-native swift kotlin ios android mobile
+      blockchain web3 cryptocurrency fintech payment-processing
+      cybersecurity penetration-testing vulnerability-assessment
+      automation testing selenium cypress jest mocha pytest
     ]
     
     business_skills = %w[
-      management leadership team-lead director manager supervisor
-      operations strategy planning execution implementation
-      project-management stakeholder client customer vendor
-      budget financial cost-optimization revenue growth
-      process-improvement lean six-sigma automation efficiency
-      communication presentation negotiation collaboration
-      analytics kpi metrics dashboard reporting compliance
-      risk-management quality-assurance testing documentation
-      training mentoring coaching development performance
+      management leadership team-lead director manager supervisor ceo cto
+      operations strategy planning execution implementation coordination
+      project-management stakeholder client customer vendor partner
+      budget financial cost-optimization revenue growth profit margins
+      process-improvement lean six-sigma automation efficiency optimization
+      communication presentation negotiation collaboration cross-functional
+      analytics kpi metrics dashboard reporting compliance audit
+      risk-management quality-assurance testing documentation technical-writing
+      training mentoring coaching development performance team-building
+      sales marketing business-development client-relations customer-success
+      product-management roadmap requirements gathering user-experience
+      change-management digital-transformation innovation disruption
     ]
     
     industry_terms = %w[
-      saas b2b b2c e-commerce fintech healthcare edtech
-      startup enterprise corporate consulting agency
-      remote distributed cross-functional international
-      scalable high-availability performance optimization
-      security compliance gdpr hipaa sox pci
-      innovation digital-transformation cloud-native
+      saas b2b b2c e-commerce fintech healthcare edtech proptech
+      startup enterprise corporate consulting agency freelance
+      remote distributed hybrid cross-functional international global
+      scalable high-availability performance optimization fault-tolerant
+      security compliance gdpr hipaa sox pci-dss iso27001
+      innovation digital-transformation cloud-native cloud-first
+      artificial-intelligence internet-of-things big-data real-time
+      user-experience user-interface design-thinking customer-centric
+      omnichannel multi-tenant multi-platform cross-platform
+      sustainable green-technology renewable-energy esg
     ]
     
-    all_keywords = technical_skills + business_skills + industry_terms
+    soft_skills = %w[
+      problem-solving critical-thinking analytical creative adaptable
+      self-motivated proactive detail-oriented results-driven
+      time-management multitasking prioritization organization
+      interpersonal teamwork collaboration communication presentation
+      leadership mentoring coaching conflict-resolution
+      customer-focused client-oriented service-minded
+      innovative forward-thinking strategic-thinking
+    ]
+    
+    all_keywords = technical_skills + business_skills + industry_terms + soft_skills
     
     # Extract keywords present in job posting
     found_keywords = all_keywords.select { |keyword| 
       job_text.include?(keyword.tr('-', ' ')) || job_text.include?(keyword) 
     }
     
-    # Also extract job-specific phrases
+    # Extract job-specific phrases and exact matches from job description
     job_phrases = extract_job_phrases(job_text)
+    exact_matches = extract_exact_job_terms(job_text)
     
-    (found_keywords + job_phrases).uniq.first(15) # Limit to top 15 most relevant
+    # Combine and prioritize most relevant keywords
+    all_found = (found_keywords + job_phrases + exact_matches).uniq
+    
+    # Prioritize by frequency in job posting
+    prioritized = all_found.sort_by { |keyword| 
+      count = job_text.scan(/#{Regexp.escape(keyword.tr('-', ' ').downcase)}/).length
+      -count # Sort in descending order
+    }
+    
+    prioritized.first(20) # Top 20 most relevant keywords
   end
   
   def extract_job_phrases(job_text)
@@ -327,12 +441,41 @@ class AiController < ApplicationController
     # Extract important business phrases
     (0..words.length-3).each do |i|
       phrase = words[i..i+2].join(' ')
-      if phrase.match?(/\b(management|leadership|development|operations|strategy|analysis|implementation|optimization|improvement)\b/)
+      if phrase.match?(/\b(management|leadership|development|operations|strategy|analysis|implementation|optimization|improvement|experience|software|technical|business|product|team|project|data|customer|system|digital|cloud|application|platform|solution|framework|integration|security|performance|quality|process|service|support|innovation|transformation|architecture|infrastructure|engineering|design|analytics|automation|collaboration|communication|planning|execution)\b/)
         phrases << phrase
       end
     end
     
-    phrases.uniq.first(8)
+    phrases.uniq.first(12)
+  end
+
+  def extract_exact_job_terms(job_text)
+    # Extract exact important terms from the job posting
+    exact_terms = []
+    
+    # Look for years of experience patterns
+    experience_matches = job_text.scan(/(\d+\+?\s*(?:years?|yrs?)\s*(?:of\s*)?(?:experience|exp)?)/i)
+    experience_matches.each { |match| exact_terms << match.first.downcase }
+    
+    # Extract degree requirements
+    degree_matches = job_text.scan(/\b(bachelor'?s?|master'?s?|phd|doctorate|mba|degree|certification|diploma)\b/i)
+    degree_matches.each { |match| exact_terms << match.downcase }
+    
+    # Extract specific technologies mentioned with version numbers
+    tech_versions = job_text.scan(/\b([a-z]+\s*\d+(?:\.\d+)*|[a-z]+\s*version\s*\d+)\b/i)
+    tech_versions.each { |match| exact_terms << match.first.downcase }
+    
+    # Extract programming languages and frameworks mentioned explicitly
+    languages = %w[python javascript typescript java c# php ruby go rust swift kotlin scala r matlab]
+    frameworks = %w[react angular vue django flask spring laravel symfony rails express fastapi tensorflow pytorch]
+    
+    (languages + frameworks).each do |tech|
+      if job_text.include?(tech)
+        exact_terms << tech
+      end
+    end
+    
+    exact_terms.uniq.first(10)
   end
   
   def strip_html(html)
@@ -347,5 +490,64 @@ class AiController < ApplicationController
       "Include relevant projects or experiences that demonstrate these skills",
       "Add these technologies to your skills section if you have experience with them"
     ]
+  end
+
+  def add_resume_styling(resume_content)
+    # Wrap the resume content in a styled container
+    <<~HTML
+      <div class="resume-container">
+        #{resume_content}
+      </div>
+    HTML
+  end
+
+  def get_resume_css_styles
+    # Read the CSS file and return its contents
+    css_file_path = Rails.root.join('app', 'assets', 'stylesheets', 'resume_templates.css')
+    
+    if File.exist?(css_file_path)
+      File.read(css_file_path)
+    else
+      # Fallback inline styles if file not found
+      <<~CSS
+        .resume-container {
+          font-family: Arial, sans-serif;
+          font-size: 11pt;
+          line-height: 1.4;
+          color: #333;
+          max-width: 8.5in;
+          margin: 0 auto;
+          padding: 0.5in;
+          background: white;
+        }
+        .name {
+          font-size: 24pt;
+          font-weight: bold;
+          color: #2c3e50;
+          text-transform: uppercase;
+          margin-bottom: 5px;
+        }
+        .section-title {
+          font-size: 14pt;
+          font-weight: bold;
+          color: #2c3e50;
+          text-transform: uppercase;
+          border-bottom: 1px solid #34495e;
+          margin-bottom: 10px;
+        }
+        .job-title {
+          font-size: 12pt;
+          font-weight: bold;
+          color: #2c3e50;
+        }
+        .company {
+          font-weight: 600;
+          color: #34495e;
+        }
+        .achievements li {
+          margin-bottom: 4px;
+        }
+      CSS
+    end
   end
 end

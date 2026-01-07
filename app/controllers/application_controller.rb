@@ -28,4 +28,12 @@ class ApplicationController < ActionController::API
   def generate_token(user)
     JWT.encode({ user_id: user.id, exp: 24.hours.from_now.to_i }, Rails.application.secret_key_base, 'HS256')
   end
+
+  def render_success(data = {})
+    render json: { success: true, data: data }, status: :ok
+  end
+
+  def render_error(message, status = :bad_request)
+    render json: { success: false, error: message }, status: status
+  end
 end

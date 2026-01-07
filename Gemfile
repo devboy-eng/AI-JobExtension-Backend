@@ -20,6 +20,7 @@ gem "wkhtmltopdf-binary"
 gem "htmltoword"
 gem "pdf-reader"
 gem "ruby-openai"
+gem "httparty"
 
 group :development, :test do
   gem "byebug", platforms: [:mri, :windows]

@@ -18,9 +18,9 @@ Rails.application.routes.draw do
     post 'parse-resume', to: '/auth#parse_resume'
     
     # AI customization routes
-    namespace :ai do
-      post 'customize', to: '/auth#customize_resume'
-    end
+    post 'ai/customize', to: 'ai#customize'
+    post 'ai/ats-score', to: 'ai#ats_score'
+    get 'ai/test', to: 'ai#test_ai'
     
     # Download routes
     namespace :download do

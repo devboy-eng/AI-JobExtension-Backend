@@ -11,6 +11,7 @@ class User < ApplicationRecord
   belongs_to :referrer, class_name: 'User', foreign_key: 'referred_by', optional: true
   has_one :profile, dependent: :destroy
   has_many :resume_versions, dependent: :destroy
+  has_many :customizations, dependent: :destroy
   
   validates :email, presence: true, uniqueness: true, format: { with: URI::MailTo::EMAIL_REGEXP }
   validates :password, length: { minimum: 6 }, if: -> { password.present? }
@@ -103,5 +104,24 @@ class User < ApplicationRecord
     if self.class.column_names.include?('profile_data')
       self.profile_data ||= {}
     end
+  end
+
+  # Coin management methods
+  def deduct_coins(amount, description = nil)
+    return false if coin_balance < amount
+    
+    update!(coin_balance: coin_balance - amount)
+    true
+  rescue => e
+    Rails.logger.error "Error deducting coins for user #{id}: #{e.message}"
+    false
+  end
+
+  def add_coins(amount, description = nil)
+    update!(coin_balance: coin_balance + amount)
+    true
+  rescue => e
+    Rails.logger.error "Error adding coins for user #{id}: #{e.message}"
+    false
   end
 end
