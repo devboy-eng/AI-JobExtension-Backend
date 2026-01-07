@@ -43,6 +43,23 @@ class User < ApplicationRecord
     Rails.logger.error "Error adding coins for user #{id}: #{e.message}"
     false
   end
+
+  # Legacy methods for DM and contact usage (placeholders for compatibility)
+  def current_month_dm_count
+    0 # Placeholder since we removed Instagram automation
+  end
+
+  def dm_limit
+    is_pro_user? ? 1000 : 100
+  end
+
+  def current_month_contact_count
+    0 # Placeholder since we removed Instagram automation
+  end
+
+  def contact_limit
+    is_pro_user? ? 500 : 50
+  end
   
   private
   
