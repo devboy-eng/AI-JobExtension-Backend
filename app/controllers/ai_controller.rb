@@ -219,60 +219,60 @@ class AiController < ApplicationController
       Use this EXACT structured layout (BetterCV Template 3 inspired):
 
       HEADER SECTION (Contact Information):
-      <div style="text-align: center; border-bottom: 2px solid #333; padding-bottom: 15px; margin-bottom: 25px;">
-        <h1 style="font-size: 24px; font-weight: bold; margin: 0; color: #333;">FULL NAME</h1>
-        <p style="font-size: 16px; font-weight: bold; margin: 8px 0; color: #555;">Target Job Title</p>
-        <p style="font-size: 12px; margin: 5px 0; color: #666;">Email: email | Phone: phone | Location: location</p>
-        <p style="font-size: 12px; margin: 5px 0; color: #666;">LinkedIn: linkedin</p>
+      <div style="text-align: center; border-bottom: 2px solid #333; padding-bottom: 12px; margin-bottom: 20px;">
+        <h1 style="font-size: 28px; font-weight: bold; margin: 0; color: #333;">FULL NAME</h1>
+        <p style="font-size: 18px; font-weight: bold; margin: 8px 0; color: #555;">Target Job Title</p>
+        <p style="font-size: 14px; margin: 5px 0; color: #666;">Email: email | Phone: phone | Location: location</p>
+        <p style="font-size: 14px; margin: 5px 0; color: #666;">LinkedIn: linkedin</p>
       </div>
 
       PROFESSIONAL SUMMARY SECTION:
-      <h2 style="font-size: 16px; font-weight: bold; color: #333; margin: 20px 0 10px 0; text-transform: uppercase; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Professional Summary</h2>
-      <p style="font-size: 11px; line-height: 1.4; margin: 0 0 20px 0; text-align: justify;">Write 3-4 sentences that directly mirror the job requirements. Include years of experience, 
+      <h2 style="font-size: 18px; font-weight: bold; color: #333; margin: 15px 0 8px 0; text-transform: uppercase; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Professional Summary</h2>
+      <p style="font-size: 13px; line-height: 1.4; margin: 0 0 15px 0; text-align: justify;">Write 3-4 sentences that directly mirror the job requirements. Include years of experience, 
       key expertise areas from job posting, and specific value proposition for the target role.
       End with how you'll contribute to the specific company mentioned in job posting.</p>
 
       CORE SKILLS SECTION:
-      <h2 style="font-size: 16px; font-weight: bold; color: #333; margin: 20px 0 10px 0; text-transform: uppercase; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Core Skills</h2>
-      <p style="font-size: 11px; line-height: 1.4; margin: 0 0 20px 0;">List skills as comma-separated text, prioritizing skills mentioned in job description first</p>
+      <h2 style="font-size: 18px; font-weight: bold; color: #333; margin: 15px 0 8px 0; text-transform: uppercase; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Core Skills</h2>
+      <p style="font-size: 13px; line-height: 1.4; margin: 0 0 15px 0;">List skills as comma-separated text, prioritizing skills mentioned in job description first</p>
 
       PROFESSIONAL EXPERIENCE SECTION:
-      <h2 style="font-size: 16px; font-weight: bold; color: #333; margin: 20px 0 10px 0; text-transform: uppercase; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Professional Experience</h2>
+      <h2 style="font-size: 18px; font-weight: bold; color: #333; margin: 15px 0 8px 0; text-transform: uppercase; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Professional Experience</h2>
       
       For each job (chronological order, most recent first):
-      <div style="margin: 0 0 20px 0;">
-        <h3 style="font-size: 13px; font-weight: bold; margin: 0; color: #333;">Job Title</h3>
-        <p style="font-size: 12px; font-weight: bold; margin: 3px 0; color: #555;">Company Name | Location</p>
-        <p style="font-size: 11px; font-style: italic; margin: 3px 0 8px 0; color: #666;">Start Date - End Date</p>
-        <ul style="margin: 0; padding-left: 20px; font-size: 11px; line-height: 1.4;">
-          <li style="margin-bottom: 5px;">Generate 4-6 quantified achievements with specific metrics and results</li>
-          <li style="margin-bottom: 5px;">Start each bullet with strong action verbs: Led, Managed, Developed, Achieved, Increased, Implemented</li>
-          <li style="margin-bottom: 5px;">Include specific numbers, percentages, and business impact where logical</li>
-          <li style="margin-bottom: 5px;">Align each achievement with keywords and requirements from the job posting</li>
-          <li style="margin-bottom: 5px;">Focus on results and business value delivered, not just job duties</li>
-          <li style="margin-bottom: 5px;">Use industry-specific terminology that matches the target job description</li>
+      <div style="margin: 0 0 15px 0;">
+        <h3 style="font-size: 15px; font-weight: bold; margin: 0; color: #333;">Job Title</h3>
+        <p style="font-size: 13px; font-weight: bold; margin: 3px 0; color: #555;">Company Name | Location</p>
+        <p style="font-size: 12px; font-style: italic; margin: 3px 0 6px 0; color: #666;">Start Date - End Date</p>
+        <ul style="margin: 0; padding-left: 18px; font-size: 12px; line-height: 1.4;">
+          <li style="margin-bottom: 4px;">Generate 4-6 quantified achievements with specific metrics and results</li>
+          <li style="margin-bottom: 4px;">Start each bullet with strong action verbs: Led, Managed, Developed, Achieved, Increased, Implemented</li>
+          <li style="margin-bottom: 4px;">Include specific numbers, percentages, and business impact where logical</li>
+          <li style="margin-bottom: 4px;">Align each achievement with keywords and requirements from the job posting</li>
+          <li style="margin-bottom: 4px;">Focus on results and business value delivered, not just job duties</li>
+          <li style="margin-bottom: 4px;">Use industry-specific terminology that matches the target job description</li>
         </ul>
       </div>
 
       EDUCATION SECTION:
-      <h2 style="font-size: 16px; font-weight: bold; color: #333; margin: 20px 0 10px 0; text-transform: uppercase; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Education</h2>
-      <p style="font-size: 11px; line-height: 1.4; margin: 0 0 20px 0;">[User's exact education - do not modify or add details]</p>
+      <h2 style="font-size: 18px; font-weight: bold; color: #333; margin: 15px 0 8px 0; text-transform: uppercase; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Education</h2>
+      <p style="font-size: 13px; line-height: 1.4; margin: 0 0 15px 0;">[User's exact education - do not modify or add details]</p>
 
       LANGUAGES SECTION:
-      <h2 style="font-size: 16px; font-weight: bold; color: #333; margin: 20px 0 10px 0; text-transform: uppercase; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Languages</h2>
-      <p style="font-size: 11px; line-height: 1.4; margin: 0 0 20px 0;">[User's exact language list - do not add proficiency levels]</p>
+      <h2 style="font-size: 18px; font-weight: bold; color: #333; margin: 15px 0 8px 0; text-transform: uppercase; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Languages</h2>
+      <p style="font-size: 13px; line-height: 1.4; margin: 0 0 15px 0;">[User's exact language list - do not add proficiency levels]</p>
 
       BETTERĈV TEMPLATE 3 ATS COMPLIANCE RULES:
       - Use inline styles for professional formatting while maintaining ATS compatibility
       - Include div containers with proper styling for visual appeal
-      - Standard fonts (11-16px) and conservative colors (#333, #555, #666)
-      - Chronological format with clear visual hierarchy
-      - Professional borders and spacing for readability
+      - Optimized fonts (12-18px headers, 13px content) and conservative colors (#333, #555, #666)
+      - Chronological format with clear visual hierarchy and reduced whitespace
+      - Professional borders and compact spacing for better space utilization
       - Keywords from job description integrated naturally throughout
       - No complex layouts, tables, or graphics that confuse ATS
       - Clean section headers with subtle underlines
       - Balanced design that appeals to both ATS systems and human recruiters
-      - Proper spacing and typography for professional appearance
+      - Compact but readable typography for professional appearance
 
       CRITICAL REQUIREMENTS:
       - Use ONLY user's provided education - NO fabrication
@@ -526,9 +526,9 @@ class AiController < ApplicationController
   end
 
   def add_resume_styling(resume_content)
-    # Wrap in professional container matching BetterCV Template 3 style
+    # Wrap in professional container with optimized spacing and larger fonts
     <<~HTML
-      <div style="max-width: 8.5in; margin: 0 auto; padding: 1in 0.75in; font-family: Arial, sans-serif; font-size: 11px; line-height: 1.4; color: #333; background: white;">
+      <div style="max-width: 8.5in; margin: 0 auto; padding: 0.4in 0.4in; font-family: Arial, sans-serif; font-size: 12px; line-height: 1.3; color: #333; background: white;">
         #{resume_content}
       </div>
     HTML
