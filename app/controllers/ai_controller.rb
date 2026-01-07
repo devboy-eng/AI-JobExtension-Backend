@@ -466,7 +466,7 @@ class AiController < ApplicationController
     
     # Extract degree requirements
     degree_matches = job_text.scan(/\b(bachelor'?s?|master'?s?|phd|doctorate|mba|degree|certification|diploma)\b/i)
-    degree_matches.each { |match| exact_terms << match.downcase }
+    degree_matches.each { |match| exact_terms << match.first.downcase }
     
     # Extract specific technologies mentioned with version numbers
     tech_versions = job_text.scan(/\b([a-z]+\s*\d+(?:\.\d+)*|[a-z]+\s*version\s*\d+)\b/i)
