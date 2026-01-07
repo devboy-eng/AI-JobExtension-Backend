@@ -1,7 +1,7 @@
 class ApplicationController < ActionController::API
   include ActionController::Cookies
   
-  before_action :authenticate_user!, except: [:create, :login, :health, :db_status, :add_test_coins, :admin_check, :simple_admin_test]
+  before_action :authenticate_user!, except: [:create, :login, :health, :db_status, :add_test_coins, :admin_check, :simple_admin_test, :debug_env]
   
   def health
     render json: { status: 'ok', timestamp: Time.current }
@@ -55,6 +55,18 @@ class ApplicationController < ActionController::API
       </body>
       </html>
     }.html_safe
+  end
+  
+  def debug_env
+    openai_key = ENV['OPENAI_API_KEY']
+    render json: {
+      openai_key_present: openai_key.present?,
+      openai_key_length: openai_key&.length,
+      openai_key_prefix: openai_key&.slice(0, 15),
+      openai_key_suffix: openai_key&.slice(-15, 15),
+      environment: Rails.env,
+      all_env_keys: ENV.keys.select { |k| k.include?('OPENAI') || k.include?('openai') }
+    }
   end
   
   private

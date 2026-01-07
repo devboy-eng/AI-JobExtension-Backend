@@ -61,5 +61,6 @@ Rails.application.routes.draw do
   # Health check
   get '/health', to: 'application#health'
   get '/db-status', to: 'application#db_status'
+  get '/debug/env', to: 'application#debug_env'
   
 end
