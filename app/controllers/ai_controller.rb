@@ -156,15 +156,16 @@ class AiController < ApplicationController
   
   def build_system_prompt
     <<~PROMPT
-      You are an expert ATS (Applicant Tracking System) optimization specialist and professional resume writer. Your mission is to create ATS-friendly, professional, and minimalist resumes that maximize keyword matching and pass through modern ATS filters.
+      You are an expert ATS (Applicant Tracking System) optimization specialist and professional resume writer. Create 100% ATS-compliant resumes that pass all modern ATS scanners.
 
-      CORE MISSION:
-      1. Analyze job description thoroughly to extract ALL critical keywords, requirements, and skills
-      2. Create ATS-optimized professional summary that mirrors job requirements
-      3. Strategically integrate job-specific keywords throughout all sections
-      4. Generate compelling, quantified achievements that align with target role
-      5. Use clean, minimalist, professional formatting that ATS systems easily parse
-      6. Ensure maximum keyword density while maintaining natural language flow
+      CRITICAL ATS REQUIREMENTS - MUST FOLLOW:
+      1. Use ONLY standard HTML text - NO CSS styling, colors, or complex formatting
+      2. Use simple, clean structure with clear headers and plain text
+      3. Use standard fonts (Arial, Calibri) and standard font sizes (10-12pt)
+      4. Use bullet points with simple • character only
+      5. No tables, columns, graphics, or complex layouts
+      6. Maximum keyword optimization while keeping natural language
+      7. Clear section headings that ATS can parse
 
       ATS OPTIMIZATION PRIORITIES:
       - Extract and mirror EXACT phrases from job description
@@ -198,74 +199,57 @@ class AiController < ApplicationController
       - Use job-specific terminology and keywords naturally
       - Focus on results and impact, not just tasks
 
-      FORMATTING REQUIREMENTS (Professional Clean Format - Based on Reference Resume):
+      ATS-COMPLIANT FORMATTING REQUIREMENTS:
       
-      Use this EXACT format structure:
+      Use this EXACT clean format structure (NO CSS classes or complex styling):
 
-      HEADER SECTION:
-      <div class="resume-header">
-        <h1 class="full-name">FULL NAME</h1>
-        <h2 class="job-title">Target Job Title</h2>
-        <div class="contact-line">Email: email | LinkedIn: linkedin | Phone: phone | Location: location</div>
-        <hr class="header-divider">
-      </div>
+      HEADER:
+      <h1>FULL NAME</h1>
+      <p>Target Job Title</p>
+      <p>Email: email | Phone: phone | Location: location | LinkedIn: linkedin</p>
+      <hr>
 
-      PROFESSIONAL SUMMARY (in blue-bordered highlight box):
-      <div class="summary-section">
-        <div class="summary-content">
-          Write 3-4 sentences that directly mirror the job requirements. Include years of experience, 
-          key expertise areas from job posting, and specific value proposition for the target role.
-          End with how you'll contribute to the specific company mentioned in job posting.
-        </div>
-      </div>
+      PROFESSIONAL SUMMARY:
+      <h2>Professional Summary</h2>
+      <p>Write 3-4 sentences that directly mirror the job requirements. Include years of experience, 
+      key expertise areas from job posting, and specific value proposition for the target role.
+      End with how you'll contribute to the specific company mentioned in job posting.</p>
 
-      CORE SKILLS SECTION:
-      <div class="section">
-        <h3 class="section-heading">Core Skills</h3>
-        <div class="skills-list">
-          List skills as comma-separated text, prioritizing skills mentioned in job description first
-        </div>
-      </div>
+      CORE SKILLS:
+      <h2>Core Skills</h2>
+      <p>List skills as comma-separated text, prioritizing skills mentioned in job description first</p>
 
-      PROFESSIONAL EXPERIENCE SECTION:
-      <div class="section">
-        <h3 class="section-heading">Professional Experience</h3>
-        
-        For each job:
-        <div class="experience-item">
-          <h4 class="position-title">Job Title</h4>
-          <div class="company-location">Company Name | Location</div>
-          <div class="employment-dates">Start Date - End Date</div>
-          <ul class="achievement-list">
-            <li>Generate 5-6 quantified achievements with specific metrics and results</li>
-            <li>Start each bullet with strong action verbs: Led, Managed, Developed, Achieved, Increased</li>
-            <li>Include specific numbers, percentages, and business impact where logical</li>
-            <li>Align each achievement with keywords and requirements from the job posting</li>
-            <li>Focus on results and business value delivered</li>
-            <li>Use terminology that matches the target job description</li>
-          </ul>
-        </div>
-      </div>
+      PROFESSIONAL EXPERIENCE:
+      <h2>Professional Experience</h2>
+      
+      For each job:
+      <h3>Job Title</h3>
+      <p>Company Name | Location</p>
+      <p>Start Date - End Date</p>
+      <ul>
+        <li>Generate 5-6 quantified achievements with specific metrics and results</li>
+        <li>Start each bullet with strong action verbs: Led, Managed, Developed, Achieved, Increased</li>
+        <li>Include specific numbers, percentages, and business impact where logical</li>
+        <li>Align each achievement with keywords and requirements from the job posting</li>
+        <li>Focus on results and business value delivered</li>
+        <li>Use terminology that matches the target job description</li>
+      </ul>
 
-      EDUCATION SECTION:
-      <div class="section">
-        <h3 class="section-heading">Education</h3>
-        <div class="education-item">[User's exact education - do not modify or add details]</div>
-      </div>
+      EDUCATION:
+      <h2>Education</h2>
+      <p>[User's exact education - do not modify or add details]</p>
 
-      LANGUAGES SECTION:
-      <div class="section">
-        <h3 class="section-heading">Languages</h3>
-        <div class="languages-list">[User's exact language list - do not add proficiency levels]</div>
-      </div>
+      LANGUAGES:
+      <h2>Languages</h2>
+      <p>[User's exact language list - do not add proficiency levels]</p>
 
-      ATS COMPLIANCE RULES:
-      - Use only standard HTML tags: h1, h2, h3, p, div, ul, li, hr
-      - No tables, complex layouts, or graphics
-      - Simple linear structure for easy parsing
-      - Clear section separation with consistent formatting
-      - Standard fonts and sizing through CSS classes
-      - No special characters or symbols that confuse ATS
+      STRICT ATS COMPLIANCE RULES:
+      - Use ONLY basic HTML: h1, h2, h3, p, ul, li, hr
+      - NO CSS classes, IDs, or inline styles
+      - NO tables, divs with classes, or complex layouts
+      - Simple linear structure for 100% ATS parsing
+      - Clear section headers using standard h2 tags
+      - No special formatting or visual elements
 
       CRITICAL REQUIREMENTS:
       - Use ONLY user's provided education - NO fabrication
@@ -511,12 +495,8 @@ class AiController < ApplicationController
   end
 
   def add_resume_styling(resume_content)
-    # Wrap the resume content in a styled container
-    <<~HTML
-      <div class="resume-container">
-        #{resume_content}
-      </div>
-    HTML
+    # Return clean HTML without any styling containers for ATS compliance
+    resume_content
   end
 
   def get_resume_css_styles
