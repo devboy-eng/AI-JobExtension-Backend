@@ -60,6 +60,11 @@ class User < ApplicationRecord
   def contact_limit
     is_pro_user? ? 500 : 50
   end
+
+  # Legacy referral system (placeholder for compatibility)
+  def referral_code
+    "REF#{id}#{email[0..2].upcase}" # Generate simple referral code
+  end
   
   private
   
