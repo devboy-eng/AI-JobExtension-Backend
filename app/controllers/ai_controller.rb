@@ -199,14 +199,15 @@ class AiController < ApplicationController
       - Use job-specific terminology and keywords naturally
       - Focus on results and impact, not just tasks
 
-      ATS-COMPLIANT FORMATTING REQUIREMENTS:
+      BETTERĈV-INSPIRED ATS-COMPLIANT FORMATTING:
       
-      Use this EXACT clean format structure (NO CSS classes or complex styling):
+      Use this EXACT professional format (based on top ATS resume practices):
 
-      HEADER:
+      HEADER SECTION:
       <h1>FULL NAME</h1>
-      <p>Target Job Title</p>
-      <p>Email: email | Phone: phone | Location: location | LinkedIn: linkedin</p>
+      <p><strong>Target Job Title</strong></p>
+      <p>Email: email | Phone: phone | Location: location</p>
+      <p>LinkedIn: linkedin</p>
       <hr>
 
       PROFESSIONAL SUMMARY:
@@ -222,17 +223,17 @@ class AiController < ApplicationController
       PROFESSIONAL EXPERIENCE:
       <h2>Professional Experience</h2>
       
-      For each job:
+      For each job (chronological order, most recent first):
       <h3>Job Title</h3>
-      <p>Company Name | Location</p>
-      <p>Start Date - End Date</p>
+      <p><strong>Company Name</strong> | Location</p>
+      <p><em>Start Date - End Date</em></p>
       <ul>
-        <li>Generate 5-6 quantified achievements with specific metrics and results</li>
-        <li>Start each bullet with strong action verbs: Led, Managed, Developed, Achieved, Increased</li>
+        <li>Generate 4-6 quantified achievements with specific metrics and results</li>
+        <li>Start each bullet with strong action verbs: Led, Managed, Developed, Achieved, Increased, Implemented</li>
         <li>Include specific numbers, percentages, and business impact where logical</li>
         <li>Align each achievement with keywords and requirements from the job posting</li>
-        <li>Focus on results and business value delivered</li>
-        <li>Use terminology that matches the target job description</li>
+        <li>Focus on results and business value delivered, not just job duties</li>
+        <li>Use industry-specific terminology that matches the target job description</li>
       </ul>
 
       EDUCATION:
@@ -243,13 +244,17 @@ class AiController < ApplicationController
       <h2>Languages</h2>
       <p>[User's exact language list - do not add proficiency levels]</p>
 
-      STRICT ATS COMPLIANCE RULES:
-      - Use ONLY basic HTML: h1, h2, h3, p, ul, li, hr
-      - NO CSS classes, IDs, or inline styles
-      - NO tables, divs with classes, or complex layouts
-      - Simple linear structure for 100% ATS parsing
-      - Clear section headers using standard h2 tags
-      - No special formatting or visual elements
+      BETTERĈV ATS COMPLIANCE RULES (100% ATS-COMPATIBLE):
+      - Use ONLY: h1, h2, h3, p, ul, li, hr, strong, em tags
+      - NO CSS classes, IDs, tables, or complex layouts
+      - Chronological format (most ATS-friendly structure)
+      - Standard fonts and clean typography
+      - Keywords from job description integrated naturally
+      - No graphics, charts, or images that confuse ATS
+      - Clear logical section organization for human recruiters
+      - Professional yet simple design that both ATS and humans can read
+      - Focus on content quality and keyword optimization
+      - Avoid headers/footers for critical information
 
       CRITICAL REQUIREMENTS:
       - Use ONLY user's provided education - NO fabrication
