@@ -1,10 +1,19 @@
 class ApplicationController < ActionController::API
   include ActionController::Cookies
   
-  before_action :authenticate_user!, except: [:create, :login, :health]
+  before_action :authenticate_user!, except: [:create, :login, :health, :db_status]
   
   def health
     render json: { status: 'ok', timestamp: Time.current }
+  end
+
+  def db_status
+    render json: {
+      profile_data_column_exists: User.column_names.include?('profile_data'),
+      customizations_table_exists: ActiveRecord::Base.connection.table_exists?('customizations'),
+      user_columns: User.column_names,
+      pending_migrations: ActiveRecord::Base.connection.migration_context.needs_migration?
+    }
   end
   
   private

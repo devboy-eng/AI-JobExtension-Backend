@@ -248,4 +248,5 @@ Rails.application.routes.draw do
   
   # Health check
   get '/health', to: 'application#health'
+  get '/db-status', to: 'application#db_status'
 end
