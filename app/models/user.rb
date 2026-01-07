@@ -89,22 +89,6 @@ class User < ApplicationRecord
     # This would need to be implemented based on your payment system
     referrals.sum { |referral| referral.total_paid * 0.30 }
   end
-  
-  private
-  
-  def generate_referral_code
-    loop do
-      self.referral_code = SecureRandom.hex(4).upcase
-      break unless User.exists?(referral_code: referral_code)
-    end
-  end
-  
-  def initialize_profile_data
-    # Only set profile_data if the column exists
-    if self.class.column_names.include?('profile_data')
-      self.profile_data ||= {}
-    end
-  end
 
   # Coin management methods
   def deduct_coins(amount, description = nil)
@@ -123,5 +107,21 @@ class User < ApplicationRecord
   rescue => e
     Rails.logger.error "Error adding coins for user #{id}: #{e.message}"
     false
+  end
+  
+  private
+  
+  def generate_referral_code
+    loop do
+      self.referral_code = SecureRandom.hex(4).upcase
+      break unless User.exists?(referral_code: referral_code)
+    end
+  end
+  
+  def initialize_profile_data
+    # Only set profile_data if the column exists
+    if self.class.column_names.include?('profile_data')
+      self.profile_data ||= {}
+    end
   end
 end
