@@ -197,48 +197,65 @@ class AiController < ApplicationController
       - Use job-specific terminology and keywords naturally
       - Focus on results and impact, not just tasks
 
-      FORMATTING REQUIREMENTS (ATS-Friendly Professional Minimalist Theme):
+      FORMATTING REQUIREMENTS (Professional Clean Format - Based on Reference Resume):
       
-      HEADER STRUCTURE:
+      Use this EXACT format structure:
+
+      HEADER SECTION:
       <div class="resume-header">
-        <h1 class="name">FULL NAME</h1>
-        <div class="title">Current Professional Title</div>
-        <div class="contact">Email | LinkedIn | Phone | Location</div>
-        <hr class="separator">
+        <h1 class="full-name">FULL NAME</h1>
+        <h2 class="job-title">Target Job Title</h2>
+        <div class="contact-line">Email: email | LinkedIn: linkedin | Phone: phone | Location: location</div>
+        <hr class="header-divider">
       </div>
 
-      PROFESSIONAL SUMMARY:
-      <div class="section">
-        <h2 class="section-title">PROFESSIONAL SUMMARY</h2>
-        <p class="summary">Tailored summary text that mirrors job requirements...</p>
+      PROFESSIONAL SUMMARY (in blue-bordered highlight box):
+      <div class="summary-section">
+        <div class="summary-content">
+          Write 3-4 sentences that directly mirror the job requirements. Include years of experience, 
+          key expertise areas from job posting, and specific value proposition for the target role.
+          End with how you'll contribute to the specific company mentioned in job posting.
+        </div>
       </div>
 
-      CORE SKILLS:
+      CORE SKILLS SECTION:
       <div class="section">
-        <h2 class="section-title">CORE SKILLS</h2>
-        <div class="skills">Technical Skills: Skill1, Skill2, Skill3</div>
-        <div class="skills">Management Skills: Skill1, Skill2, Skill3</div>
-        <div class="skills">Industry Skills: Skill1, Skill2, Skill3</div>
+        <h3 class="section-heading">Core Skills</h3>
+        <div class="skills-list">
+          List skills as comma-separated text, prioritizing skills mentioned in job description first
+        </div>
       </div>
 
-      PROFESSIONAL EXPERIENCE:
+      PROFESSIONAL EXPERIENCE SECTION:
       <div class="section">
-        <h2 class="section-title">PROFESSIONAL EXPERIENCE</h2>
-        <div class="job">
-          <h3 class="job-title">Job Title</h3>
-          <div class="company">Company Name | Location</div>
-          <div class="dates">Start Date - End Date</div>
-          <ul class="achievements">
-            <li>Achievement 1 with quantified results</li>
-            <li>Achievement 2 with quantified results</li>
+        <h3 class="section-heading">Professional Experience</h3>
+        
+        For each job:
+        <div class="experience-item">
+          <h4 class="position-title">Job Title</h4>
+          <div class="company-location">Company Name | Location</div>
+          <div class="employment-dates">Start Date - End Date</div>
+          <ul class="achievement-list">
+            <li>Generate 5-6 quantified achievements with specific metrics and results</li>
+            <li>Start each bullet with strong action verbs: Led, Managed, Developed, Achieved, Increased</li>
+            <li>Include specific numbers, percentages, and business impact where logical</li>
+            <li>Align each achievement with keywords and requirements from the job posting</li>
+            <li>Focus on results and business value delivered</li>
+            <li>Use terminology that matches the target job description</li>
           </ul>
         </div>
       </div>
 
-      EDUCATION:
+      EDUCATION SECTION:
       <div class="section">
-        <h2 class="section-title">EDUCATION</h2>
-        <div class="education">User's exact education information</div>
+        <h3 class="section-heading">Education</h3>
+        <div class="education-item">[User's exact education - do not modify or add details]</div>
+      </div>
+
+      LANGUAGES SECTION:
+      <div class="section">
+        <h3 class="section-heading">Languages</h3>
+        <div class="languages-list">[User's exact language list - do not add proficiency levels]</div>
       </div>
 
       ATS COMPLIANCE RULES:
