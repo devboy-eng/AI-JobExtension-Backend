@@ -199,62 +199,65 @@ class AiController < ApplicationController
       - Use job-specific terminology and keywords naturally
       - Focus on results and impact, not just tasks
 
-      BETTERĈV-INSPIRED ATS-COMPLIANT FORMATTING:
+      BETTERĈV TEMPLATE 3 - ATS-OPTIMIZED PROFESSIONAL FORMAT:
       
-      Use this EXACT professional format (based on top ATS resume practices):
+      Use this EXACT structured layout (BetterCV Template 3 inspired):
 
-      HEADER SECTION:
-      <h1>FULL NAME</h1>
-      <p><strong>Target Job Title</strong></p>
-      <p>Email: email | Phone: phone | Location: location</p>
-      <p>LinkedIn: linkedin</p>
-      <hr>
+      HEADER SECTION (Contact Information):
+      <div style="text-align: center; border-bottom: 2px solid #333; padding-bottom: 15px; margin-bottom: 25px;">
+        <h1 style="font-size: 24px; font-weight: bold; margin: 0; color: #333;">FULL NAME</h1>
+        <p style="font-size: 16px; font-weight: bold; margin: 8px 0; color: #555;">Target Job Title</p>
+        <p style="font-size: 12px; margin: 5px 0; color: #666;">Email: email | Phone: phone | Location: location</p>
+        <p style="font-size: 12px; margin: 5px 0; color: #666;">LinkedIn: linkedin</p>
+      </div>
 
-      PROFESSIONAL SUMMARY:
-      <h2>Professional Summary</h2>
-      <p>Write 3-4 sentences that directly mirror the job requirements. Include years of experience, 
+      PROFESSIONAL SUMMARY SECTION:
+      <h2 style="font-size: 16px; font-weight: bold; color: #333; margin: 20px 0 10px 0; text-transform: uppercase; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Professional Summary</h2>
+      <p style="font-size: 11px; line-height: 1.4; margin: 0 0 20px 0; text-align: justify;">Write 3-4 sentences that directly mirror the job requirements. Include years of experience, 
       key expertise areas from job posting, and specific value proposition for the target role.
       End with how you'll contribute to the specific company mentioned in job posting.</p>
 
-      CORE SKILLS:
-      <h2>Core Skills</h2>
-      <p>List skills as comma-separated text, prioritizing skills mentioned in job description first</p>
+      CORE SKILLS SECTION:
+      <h2 style="font-size: 16px; font-weight: bold; color: #333; margin: 20px 0 10px 0; text-transform: uppercase; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Core Skills</h2>
+      <p style="font-size: 11px; line-height: 1.4; margin: 0 0 20px 0;">List skills as comma-separated text, prioritizing skills mentioned in job description first</p>
 
-      PROFESSIONAL EXPERIENCE:
-      <h2>Professional Experience</h2>
+      PROFESSIONAL EXPERIENCE SECTION:
+      <h2 style="font-size: 16px; font-weight: bold; color: #333; margin: 20px 0 10px 0; text-transform: uppercase; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Professional Experience</h2>
       
       For each job (chronological order, most recent first):
-      <h3>Job Title</h3>
-      <p><strong>Company Name</strong> | Location</p>
-      <p><em>Start Date - End Date</em></p>
-      <ul>
-        <li>Generate 4-6 quantified achievements with specific metrics and results</li>
-        <li>Start each bullet with strong action verbs: Led, Managed, Developed, Achieved, Increased, Implemented</li>
-        <li>Include specific numbers, percentages, and business impact where logical</li>
-        <li>Align each achievement with keywords and requirements from the job posting</li>
-        <li>Focus on results and business value delivered, not just job duties</li>
-        <li>Use industry-specific terminology that matches the target job description</li>
-      </ul>
+      <div style="margin: 0 0 20px 0;">
+        <h3 style="font-size: 13px; font-weight: bold; margin: 0; color: #333;">Job Title</h3>
+        <p style="font-size: 12px; font-weight: bold; margin: 3px 0; color: #555;">Company Name | Location</p>
+        <p style="font-size: 11px; font-style: italic; margin: 3px 0 8px 0; color: #666;">Start Date - End Date</p>
+        <ul style="margin: 0; padding-left: 20px; font-size: 11px; line-height: 1.4;">
+          <li style="margin-bottom: 5px;">Generate 4-6 quantified achievements with specific metrics and results</li>
+          <li style="margin-bottom: 5px;">Start each bullet with strong action verbs: Led, Managed, Developed, Achieved, Increased, Implemented</li>
+          <li style="margin-bottom: 5px;">Include specific numbers, percentages, and business impact where logical</li>
+          <li style="margin-bottom: 5px;">Align each achievement with keywords and requirements from the job posting</li>
+          <li style="margin-bottom: 5px;">Focus on results and business value delivered, not just job duties</li>
+          <li style="margin-bottom: 5px;">Use industry-specific terminology that matches the target job description</li>
+        </ul>
+      </div>
 
-      EDUCATION:
-      <h2>Education</h2>
-      <p>[User's exact education - do not modify or add details]</p>
+      EDUCATION SECTION:
+      <h2 style="font-size: 16px; font-weight: bold; color: #333; margin: 20px 0 10px 0; text-transform: uppercase; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Education</h2>
+      <p style="font-size: 11px; line-height: 1.4; margin: 0 0 20px 0;">[User's exact education - do not modify or add details]</p>
 
-      LANGUAGES:
-      <h2>Languages</h2>
-      <p>[User's exact language list - do not add proficiency levels]</p>
+      LANGUAGES SECTION:
+      <h2 style="font-size: 16px; font-weight: bold; color: #333; margin: 20px 0 10px 0; text-transform: uppercase; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Languages</h2>
+      <p style="font-size: 11px; line-height: 1.4; margin: 0 0 20px 0;">[User's exact language list - do not add proficiency levels]</p>
 
-      BETTERĈV ATS COMPLIANCE RULES (100% ATS-COMPATIBLE):
-      - Use ONLY: h1, h2, h3, p, ul, li, hr, strong, em tags
-      - NO CSS classes, IDs, tables, or complex layouts
-      - Chronological format (most ATS-friendly structure)
-      - Standard fonts and clean typography
-      - Keywords from job description integrated naturally
-      - No graphics, charts, or images that confuse ATS
-      - Clear logical section organization for human recruiters
-      - Professional yet simple design that both ATS and humans can read
-      - Focus on content quality and keyword optimization
-      - Avoid headers/footers for critical information
+      BETTERĈV TEMPLATE 3 ATS COMPLIANCE RULES:
+      - Use inline styles for professional formatting while maintaining ATS compatibility
+      - Include div containers with proper styling for visual appeal
+      - Standard fonts (11-16px) and conservative colors (#333, #555, #666)
+      - Chronological format with clear visual hierarchy
+      - Professional borders and spacing for readability
+      - Keywords from job description integrated naturally throughout
+      - No complex layouts, tables, or graphics that confuse ATS
+      - Clean section headers with subtle underlines
+      - Balanced design that appeals to both ATS systems and human recruiters
+      - Proper spacing and typography for professional appearance
 
       CRITICAL REQUIREMENTS:
       - Use ONLY user's provided education - NO fabrication
@@ -500,8 +503,12 @@ class AiController < ApplicationController
   end
 
   def add_resume_styling(resume_content)
-    # Return clean HTML without any styling containers for ATS compliance
-    resume_content
+    # Wrap in professional container matching BetterCV Template 3 style
+    <<~HTML
+      <div style="max-width: 8.5in; margin: 0 auto; padding: 1in 0.75in; font-family: Arial, sans-serif; font-size: 11px; line-height: 1.4; color: #333; background: white;">
+        #{resume_content}
+      </div>
+    HTML
   end
 
   def get_resume_css_styles
