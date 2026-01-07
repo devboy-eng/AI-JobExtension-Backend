@@ -15,7 +15,6 @@ class CreateCustomizations < ActiveRecord::Migration[7.1]
       t.timestamps
     end
 
-    add_index :customizations, :user_id
     add_index :customizations, :job_title
     add_index :customizations, :company
     add_index :customizations, :created_at
