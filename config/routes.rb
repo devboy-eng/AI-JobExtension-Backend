@@ -17,10 +17,7 @@ Rails.application.routes.draw do
     # Resume parsing routes
     post 'parse-resume', to: '/auth#parse_resume'
     
-    # AI customization routes
-    post 'ai/customize', to: 'ai#customize'
-    post 'ai/ats-score', to: 'ai#ats_score'
-    get 'ai/test', to: 'ai#test_ai'
+    # AI customization routes will be outside namespace
     
     # Download routes
     namespace :download do
@@ -41,6 +38,11 @@ Rails.application.routes.draw do
     delete 'customization-history/:id', to: '/auth#delete_customization_history'
     get 'customization-history/:id/pdf', to: '/auth#download_history_pdf'
   end
+
+  # AI customization routes (outside API namespace)
+  post '/api/ai/customize', to: 'ai#customize'
+  post '/api/ai/ats-score', to: 'ai#ats_score'
+  get '/api/ai/test', to: 'ai#test_ai'
 
   # Authentication routes
   post '/auth/register', to: 'auth#create'
