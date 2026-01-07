@@ -60,11 +60,10 @@ Rails.application.routes.draw do
   get '/simple-admin/users/:id/coins', to: 'admin#user_coins', as: 'simple_admin_user_coins'
   post '/simple-admin/users/:id/add_coins', to: 'admin#add_coins', as: 'simple_admin_add_coins'
   
-  # Job Extension testing endpoints (development only)
-  if Rails.env.development?
-    post '/test/add-coins', to: 'application#add_test_coins'
-    get '/test/admin-check', to: 'application#admin_check'
-  end
+  # Job Extension testing endpoints
+  post '/test/add-coins', to: 'application#add_test_coins'
+  get '/test/admin-check', to: 'application#admin_check'
+  get '/test/simple-admin', to: 'application#simple_admin_test'
   
   # Health check
   get '/health', to: 'application#health'

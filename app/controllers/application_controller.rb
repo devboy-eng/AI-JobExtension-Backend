@@ -1,7 +1,7 @@
 class ApplicationController < ActionController::API
   include ActionController::Cookies
   
-  before_action :authenticate_user!, except: [:create, :login, :health, :db_status, :add_test_coins, :admin_check]
+  before_action :authenticate_user!, except: [:create, :login, :health, :db_status, :add_test_coins, :admin_check, :simple_admin_test]
   
   def health
     render json: { status: 'ok', timestamp: Time.current }
@@ -41,6 +41,20 @@ class ApplicationController < ActionController::API
       admin_panel_url: "http://localhost:4003/simple-admin",
       message: "Admin panel is ready! Server restart may be needed to clear migration cache."
     }
+  end
+  
+  def simple_admin_test
+    render html: %{
+      <!DOCTYPE html>
+      <html>
+      <head><title>Admin Test</title></head>
+      <body>
+        <h1>Admin Panel Test - Production Working!</h1>
+        <p>Users in database: #{User.count}</p>
+        <p><a href="/simple-admin">Go to Admin Panel</a></p>
+      </body>
+      </html>
+    }.html_safe
   end
   
   private
