@@ -205,11 +205,13 @@ class AiController < ApplicationController
 
       PROFESSIONAL SUMMARY REQUIREMENTS:
       - Write 4-5 sentences that directly address the specific job role
+      - IMPORTANT: Add <br/><br/> after each sentence for line spacing
       - Start with job-relevant professional title that matches the posting
       - Include years of experience in relevant domain mentioned in JD
       - Highlight 3-4 key achievements that align with job requirements
       - End with career objective that matches company's needs
       - Use EXACT keywords from job posting naturally
+      - Each sentence should be on its own line with spacing between
 
       CORE SKILLS OPTIMIZATION:
       - Prioritize skills mentioned in job description first
@@ -241,9 +243,15 @@ class AiController < ApplicationController
 
       PROFESSIONAL SUMMARY SECTION:
       <h2 style="font-size: 18px; font-weight: bold; color: #333; margin: 8px 0 5px 0; text-transform: uppercase; border-bottom: 1px solid #ddd; padding-bottom: 3px;">Professional Summary</h2>
-      <p style="font-size: 13px; line-height: 1.3; margin: 0 0 10px 0; text-align: justify;">Write 3-4 sentences that directly mirror the job requirements. Include years of experience, 
-      key expertise areas from job posting, and specific value proposition for the target role.
-      End with how you'll contribute to the specific company mentioned in job posting.</p>
+      <p style="font-size: 13px; line-height: 1.6; margin: 0 0 10px 0; text-align: justify;">
+      Write first sentence that directly mirrors the job requirements with years of experience.<br/>
+      <br/>
+      Add second sentence highlighting key expertise areas from job posting and specific achievements.<br/>
+      <br/>
+      Include third sentence about specific value proposition for the target role.<br/>
+      <br/>
+      End with how you'll contribute to the specific company mentioned in job posting.
+      </p>
 
       CORE SKILLS SECTION:
       <h2 style="font-size: 18px; font-weight: bold; color: #333; margin: 8px 0 5px 0; text-transform: uppercase; border-bottom: 1px solid #ddd; padding-bottom: 3px;">Core Skills</h2>
