@@ -12,7 +12,7 @@ Bundler.require(*Rails.groups)
 module JobExtensionBackend
   class Application < Rails::Application
     config.load_defaults 7.1
-    config.api_only = true
+    config.api_only = false  # Changed to false to support admin panel views
     
     # Add cookies middleware for admin panel
     config.middleware.use ActionDispatch::Cookies
