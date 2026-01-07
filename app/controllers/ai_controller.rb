@@ -2,6 +2,7 @@ class AiController < ApplicationController
   skip_before_action :authenticate_user!, only: [:test_ai]
   
   OPENAI_API_KEY = ENV['OPENAI_API_KEY']
+  # Force redeploy to pick up new environment variable
   COINS_PER_CUSTOMIZATION = 10
   
   def customize
