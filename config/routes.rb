@@ -37,6 +37,7 @@ Rails.application.routes.draw do
   post '/api/ai/ats-score', to: 'ai#ats_score'
   get '/api/ai/test', to: 'ai#test_ai'
   get '/api/ai/ping', to: 'ai#ping_openai'
+  get '/api/ai/simple-test', to: 'ai#simple_test'
 
   # Authentication routes
   post '/auth/register', to: 'auth#create'

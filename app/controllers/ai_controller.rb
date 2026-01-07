@@ -1,5 +1,5 @@
 class AiController < ApplicationController
-  skip_before_action :authenticate_user!, only: [:test_ai, :ping_openai]
+  skip_before_action :authenticate_user!, only: [:test_ai, :ping_openai, :simple_test]
   
   OPENAI_API_KEY = ENV['OPENAI_API_KEY']
   # Force redeploy to pick up new environment variable
@@ -110,6 +110,37 @@ class AiController < ApplicationController
     end
   end
 
+  def simple_test
+    begin
+      response = HTTParty.post(
+        'https://api.openai.com/v1/chat/completions',
+        headers: {
+          'Authorization' => "Bearer #{OPENAI_API_KEY}",
+          'Content-Type' => 'application/json'
+        },
+        body: {
+          model: 'gpt-4o-mini',
+          messages: [
+            { role: 'system', content: 'You are a resume writer.' },
+            { role: 'user', content: 'Write a one-line professional summary for a software engineer.' }
+          ],
+          max_tokens: 100,
+          temperature: 0.5
+        }.to_json,
+        timeout: 10
+      )
+      
+      if response.success?
+        content = response.dig('choices', 0, 'message', 'content')
+        render_success({ response: content })
+      else
+        render_error("OpenAI error: #{response.body}")
+      end
+    rescue => e
+      render_error("Error: #{e.message}")
+    end
+  end
+  
   def test_ai
     begin
       # Test data
@@ -219,10 +250,10 @@ class AiController < ApplicationController
             { role: 'system', content: system_prompt },
             { role: 'user', content: user_prompt }
           ],
-          max_tokens: 8000,
+          max_tokens: 3000,
           temperature: 0.7
         }.to_json,
-        timeout: 55 # Set timeout to 55 seconds (less than Render's 60 second limit)
+        timeout: 50 # Set timeout to 50 seconds (well under Render's 60 second limit)
       )
       
       if response.success?
@@ -236,10 +267,14 @@ class AiController < ApplicationController
         end
       end
     rescue Net::ReadTimeout => e
+      Rails.logger.error "OpenAI timeout error: #{e.message}"
       raise "Request timeout: The AI is taking too long to respond. Please try again with a simpler job description."
     rescue Net::OpenTimeout => e
+      Rails.logger.error "OpenAI connection timeout: #{e.message}"
       raise "Connection timeout: Unable to connect to OpenAI. Please try again."
     rescue => e
+      Rails.logger.error "OpenAI API error: #{e.class} - #{e.message}"
+      Rails.logger.error e.backtrace.join("\n")
       raise "AI customization error: #{e.message}"
     end
   end
