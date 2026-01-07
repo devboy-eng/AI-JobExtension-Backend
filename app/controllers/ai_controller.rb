@@ -115,8 +115,18 @@ class AiController < ApplicationController
     
     # Remove any ATS compliance debug content that might have been included
     cleaned = cleaned.gsub(/ATS Compliance Check.*?Keyword Match: \d+%/m, '').strip
-    cleaned = cleaned.gsub(/✓ Formatting:.*?✓ Readability:.*?Fail/m, '').strip
+    cleaned = cleaned.gsub(/✓ Formatting:.*?Keyword Match: \d+%/m, '').strip
+    cleaned = cleaned.gsub(/✓.*?Fail.*?Keyword Match: \d+%/m, '').strip
     cleaned = cleaned.gsub(/ATS.*?Check.*?\d+%/m, '').strip
+    
+    # More specific patterns for the exact format you're seeing
+    cleaned = cleaned.gsub(/ATS Compliance Check\s*✓ Formatting: Fail\s*✓ Keywords: Fail\s*✓ Structure: Fail\s*✓ Readability: Fail\s*Keyword Match: \d+%/m, '').strip
+    cleaned = cleaned.gsub(/✓\s*Formatting:\s*Fail.*?Keyword Match:\s*\d+%/m, '').strip
+    
+    # Catch any remaining debug-like content with checkmarks and scores
+    cleaned = cleaned.gsub(/✓.*?(?:Fail|Pass).*?✓.*?(?:Fail|Pass).*?Keyword Match:\s*\d+%/m, '').strip
+    cleaned = cleaned.gsub(/ATS.*?(?:Compliance|Check).*?Match.*?\d+%/m, '').strip
+    cleaned = cleaned.gsub(/(?:Formatting|Keywords|Structure|Readability):\s*(?:Fail|Pass)/m, '').strip
     
     # Extract just the HTML content between <body> tags if it's a full HTML document
     if cleaned.include?('<body>')
@@ -268,10 +278,10 @@ class AiController < ApplicationController
       - Use ONLY user's provided education - NO fabrication
       - Use ONLY user's provided languages exactly as given
       - Keep all factual information accurate
-      - Return ONLY HTML content - NO explanations, NO debug information
-      - NEVER include ATS check results, compliance scores, or debug text in the resume
-      - NEVER add phrases like "ATS Compliance Check", "Formatting:", "Keywords:", etc.
-      - Focus on ATS-friendly, professional, minimalist design
+      - Return ONLY HTML resume content - NO explanations, NO debug information, NO meta text
+      - ABSOLUTELY NEVER include ANY of these in the resume: "ATS Compliance Check", "Formatting:", "Keywords:", "Structure:", "Readability:", "Keyword Match:", "✓", "Fail", "Pass", or ANY compliance evaluation text
+      - Do NOT generate any assessment, scoring, or evaluation content within the resume
+      - Focus ONLY on creating the actual resume content with BetterCV styling
       - Maximize keyword matching with job description
       - Ensure natural language flow despite keyword optimization
     PROMPT
@@ -315,7 +325,11 @@ class AiController < ApplicationController
 
       Generate a comprehensive, keyword-rich resume that positions this candidate as the ideal fit for the specified role.
       
-      IMPORTANT: Return ONLY the clean resume HTML content. Do NOT include any ATS compliance checks, debug information, or explanatory text.
+      CRITICAL WARNING: Return ONLY the clean resume HTML content. ABSOLUTELY DO NOT include:
+      - Any ATS compliance evaluations or checks
+      - Any text containing "✓", "Fail", "Pass", "Formatting:", "Keywords:", etc.
+      - Any scoring, assessment, or evaluation content
+      - Any explanatory or meta text outside the actual resume content
     PROMPT
   end
   
