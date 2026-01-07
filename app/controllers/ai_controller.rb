@@ -155,30 +155,49 @@ class AiController < ApplicationController
   end
   
   def call_openai_api(resume_data, job_data)
+    # Check if API key is present
+    if OPENAI_API_KEY.blank?
+      raise "OpenAI API key is not configured. Please set the OPENAI_API_KEY environment variable."
+    end
+    
     system_prompt = build_system_prompt
     user_prompt = build_user_prompt(resume_data, job_data)
     
-    response = HTTParty.post(
-      'https://api.openai.com/v1/chat/completions',
-      headers: {
-        'Authorization' => "Bearer #{OPENAI_API_KEY}",
-        'Content-Type' => 'application/json'
-      },
-      body: {
-        model: 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: system_prompt },
-          { role: 'user', content: user_prompt }
-        ],
-        max_tokens: 8000,
-        temperature: 0.7
-      }.to_json
-    )
-    
-    if response.success?
-      response.dig('choices', 0, 'message', 'content')
-    else
-      raise "OpenAI API error: #{response.body}"
+    begin
+      response = HTTParty.post(
+        'https://api.openai.com/v1/chat/completions',
+        headers: {
+          'Authorization' => "Bearer #{OPENAI_API_KEY}",
+          'Content-Type' => 'application/json'
+        },
+        body: {
+          model: 'gpt-4o-mini',
+          messages: [
+            { role: 'system', content: system_prompt },
+            { role: 'user', content: user_prompt }
+          ],
+          max_tokens: 8000,
+          temperature: 0.7
+        }.to_json,
+        timeout: 55 # Set timeout to 55 seconds (less than Render's 60 second limit)
+      )
+      
+      if response.success?
+        response.dig('choices', 0, 'message', 'content')
+      else
+        error_body = JSON.parse(response.body) rescue response.body
+        if error_body.is_a?(Hash) && error_body['error']
+          raise "OpenAI API error: #{error_body['error']['message']}"
+        else
+          raise "OpenAI API error: #{response.body}"
+        end
+      end
+    rescue Net::ReadTimeout => e
+      raise "Request timeout: The AI is taking too long to respond. Please try again with a simpler job description."
+    rescue Net::OpenTimeout => e
+      raise "Connection timeout: Unable to connect to OpenAI. Please try again."
+    rescue => e
+      raise "AI customization error: #{e.message}"
     end
   end
   
