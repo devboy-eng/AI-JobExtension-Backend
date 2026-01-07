@@ -1,5 +1,5 @@
 class AiController < ApplicationController
-  skip_before_action :authenticate_user!, only: [:test_ai]
+  skip_before_action :authenticate_user!, only: [:test_ai, :ping_openai]
   
   OPENAI_API_KEY = ENV['OPENAI_API_KEY']
   # Force redeploy to pick up new environment variable
@@ -65,6 +65,49 @@ class AiController < ApplicationController
       keywordsMissing: analysis[:missing],
       suggestions: analysis[:suggestions]
     })
+  end
+
+  def ping_openai
+    begin
+      if OPENAI_API_KEY.blank?
+        return render_error("OpenAI API key is not configured")
+      end
+      
+      response = HTTParty.post(
+        'https://api.openai.com/v1/chat/completions',
+        headers: {
+          'Authorization' => "Bearer #{OPENAI_API_KEY}",
+          'Content-Type' => 'application/json'
+        },
+        body: {
+          model: 'gpt-4o-mini',
+          messages: [
+            { role: 'system', content: 'You are a test assistant.' },
+            { role: 'user', content: 'Reply with just: OK' }
+          ],
+          max_tokens: 10,
+          temperature: 0
+        }.to_json,
+        timeout: 10
+      )
+      
+      if response.success?
+        content = response.dig('choices', 0, 'message', 'content')
+        render_success({
+          status: 'connected',
+          response: content,
+          api_key_prefix: OPENAI_API_KEY ? OPENAI_API_KEY[0..10] : nil,
+          api_key_suffix: OPENAI_API_KEY ? OPENAI_API_KEY[-10..-1] : nil
+        })
+      else
+        error_body = JSON.parse(response.body) rescue response.body
+        render_error("OpenAI API error: #{error_body}")
+      end
+    rescue Net::ReadTimeout => e
+      render_error("Timeout connecting to OpenAI (10s)")
+    rescue => e
+      render_error("Connection error: #{e.message}")
+    end
   end
 
   def test_ai
