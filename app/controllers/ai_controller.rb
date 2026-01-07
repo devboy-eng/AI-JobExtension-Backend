@@ -15,6 +15,10 @@ class AiController < ApplicationController
       resume_data = params[:resumeData]
       job_data = params[:jobData]
       
+      # Log the request for debugging
+      Rails.logger.info "Starting AI customization for user #{current_user.id}"
+      Rails.logger.info "Job title: #{job_data[:title]}"
+      
       # Call OpenAI API
       raw_response = call_openai_api(resume_data, job_data)
       
@@ -46,10 +50,22 @@ class AiController < ApplicationController
         cssStyles: get_resume_css_styles
       })
       
+    rescue Net::ReadTimeout, Net::OpenTimeout => e
+      # Refund coins on timeout
+      current_user.add_coins(COINS_PER_CUSTOMIZATION, 'Refund for timeout')
+      Rails.logger.error "Timeout in AI customization: #{e.message}"
+      render_error("Request timed out. Please try again with a shorter job description.")
     rescue => e
       # Refund coins on error
       current_user.add_coins(COINS_PER_CUSTOMIZATION, 'Refund for failed customization')
-      render_error("AI customization failed: #{e.message}")
+      Rails.logger.error "AI customization failed: #{e.class} - #{e.message}"
+      
+      # Check if it's an aborted signal
+      if e.message.include?('aborted') || e.message.include?('signal')
+        render_error("Request was cancelled. This usually happens when the request takes too long. Please try again.")
+      else
+        render_error("AI customization failed: #{e.message}")
+      end
     end
   end
   
@@ -253,7 +269,7 @@ class AiController < ApplicationController
           max_tokens: 3000,
           temperature: 0.7
         }.to_json,
-        timeout: 50 # Set timeout to 50 seconds (well under Render's 60 second limit)
+        timeout: 50 # Set timeout to 50 seconds (under Render's limit)
       )
       
       if response.success?
@@ -281,7 +297,7 @@ class AiController < ApplicationController
   
   def build_system_prompt
     <<~PROMPT
-      You are an expert ATS (Applicant Tracking System) optimization specialist and professional resume writer. Create 100% ATS-compliant resumes that pass all modern ATS scanners.
+      You are an expert resume writer. Create ATS-optimized resumes.
 
       CRITICAL ATS REQUIREMENTS - MUST FOLLOW:
       1. Use ONLY standard HTML text - NO CSS styling, colors, or complex formatting
