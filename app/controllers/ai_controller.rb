@@ -113,6 +113,11 @@ class AiController < ApplicationController
     # Remove markdown code blocks if present
     cleaned = response.gsub(/```html\s*/, '').gsub(/```\s*$/, '').strip
     
+    # Remove any ATS compliance debug content that might have been included
+    cleaned = cleaned.gsub(/ATS Compliance Check.*?Keyword Match: \d+%/m, '').strip
+    cleaned = cleaned.gsub(/✓ Formatting:.*?✓ Readability:.*?Fail/m, '').strip
+    cleaned = cleaned.gsub(/ATS.*?Check.*?\d+%/m, '').strip
+    
     # Extract just the HTML content between <body> tags if it's a full HTML document
     if cleaned.include?('<body>')
       body_match = cleaned.match(/<body[^>]*>(.*?)<\/body>/m)
@@ -263,7 +268,9 @@ class AiController < ApplicationController
       - Use ONLY user's provided education - NO fabrication
       - Use ONLY user's provided languages exactly as given
       - Keep all factual information accurate
-      - Return ONLY HTML content - no explanations
+      - Return ONLY HTML content - NO explanations, NO debug information
+      - NEVER include ATS check results, compliance scores, or debug text in the resume
+      - NEVER add phrases like "ATS Compliance Check", "Formatting:", "Keywords:", etc.
       - Focus on ATS-friendly, professional, minimalist design
       - Maximize keyword matching with job description
       - Ensure natural language flow despite keyword optimization
@@ -307,6 +314,8 @@ class AiController < ApplicationController
       6. MAINTAIN factual accuracy while maximizing relevance and ATS compatibility
 
       Generate a comprehensive, keyword-rich resume that positions this candidate as the ideal fit for the specified role.
+      
+      IMPORTANT: Return ONLY the clean resume HTML content. Do NOT include any ATS compliance checks, debug information, or explanatory text.
     PROMPT
   end
   
