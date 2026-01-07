@@ -1,6 +1,9 @@
 class AddProfileDataToUsers < ActiveRecord::Migration[7.1]
   def change
-    add_column :users, :profile_data, :jsonb, default: {}
-    add_index :users, :profile_data, using: :gin
+    # Only add if column doesn't exist (production-safe)
+    unless column_exists?(:users, :profile_data)
+      add_column :users, :profile_data, :jsonb, default: {}
+      add_index :users, :profile_data, using: :gin
+    end
   end
 end

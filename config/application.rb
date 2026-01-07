@@ -9,10 +9,14 @@ require "action_mailer/railtie"
 
 Bundler.require(*Rails.groups)
 
-module InstagramAutomation
+module JobExtensionBackend
   class Application < Rails::Application
     config.load_defaults 7.1
     config.api_only = true
+    
+    # Add cookies middleware for admin panel
+    config.middleware.use ActionDispatch::Cookies
+    config.middleware.use ActionDispatch::Session::CookieStore, key: '_job_extension_session'
     
     # Fix autoloading for models
     config.eager_load_paths += %W(#{config.root}/app/models)

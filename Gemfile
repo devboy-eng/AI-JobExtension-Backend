@@ -11,9 +11,6 @@ gem "rack-cors"
 gem "bcrypt", "~> 3.1.7"
 gem "jwt"
 gem "redis", "~> 4.0"
-gem "sidekiq"
-gem "instagram_basic_display"
-gem "faraday"
 gem "dotenv-rails"
 gem "wicked_pdf"
 gem "wkhtmltopdf-binary"
@@ -21,6 +18,7 @@ gem "htmltoword"
 gem "pdf-reader"
 gem "ruby-openai"
 gem "httparty"
+gem "kaminari"
 
 group :development, :test do
   gem "byebug", platforms: [:mri, :windows]

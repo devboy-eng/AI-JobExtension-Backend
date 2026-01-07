@@ -1,0 +1,87 @@
+<h1>Coin Management</h1>
+
+<div class="card">
+  <h2>User: <%= @user.email %></h2>
+  
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 1rem 0;">
+    <div style="padding: 1rem; background: #ecf0f1; border-radius: 4px;">
+      <strong>Current Balance:</strong><br>
+      <span style="font-size: 1.5rem; color: #27ae60;"><%= @user.coin_balance %> coins</span>
+    </div>
+    
+    <div style="padding: 1rem; background: #ecf0f1; border-radius: 4px;">
+      <strong>Plan:</strong><br>
+      <span style="text-transform: capitalize; font-size: 1.2rem;"><%= @user.plan.humanize %></span>
+    </div>
+    
+    <div style="padding: 1rem; background: #ecf0f1; border-radius: 4px;">
+      <strong>Total Customizations:</strong><br>
+      <span style="font-size: 1.2rem;"><%= @user.customizations.count %></span>
+    </div>
+    
+    <div style="padding: 1rem; background: #ecf0f1; border-radius: 4px;">
+      <strong>Member Since:</strong><br>
+      <span style="font-size: 1rem;"><%= @user.created_at.strftime("%b %d, %Y") %></span>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Add Coins</h2>
+  
+  <%= form_with url: simple_admin_add_coins_path(@user), method: :post, local: true do |f| %>
+    <div style="display: grid; grid-template-columns: 1fr 2fr 100px; gap: 1rem; align-items: end;">
+      <div class="form-group" style="margin-bottom: 0;">
+        <%= f.label :amount %>
+        <%= f.number_field :amount, min: 1, required: true %>
+      </div>
+      
+      <div class="form-group" style="margin-bottom: 0;">
+        <%= f.label :description %>
+        <%= f.text_field :description, placeholder: "Optional reason for adding coins" %>
+      </div>
+      
+      <%= f.submit "Add Coins", class: "btn btn-success" %>
+    </div>
+  <% end %>
+</div>
+
+<div class="card">
+  <h2>Recent AI Customizations</h2>
+  
+  <% if @customizations.any? %>
+    <table>
+      <thead>
+        <tr>
+          <th>Job Title</th>
+          <th>Company</th>
+          <th>ATS Score</th>
+          <th>Created</th>
+          <th>Platform</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @customizations.each do |customization| %>
+          <tr>
+            <td><%= customization.job_title %></td>
+            <td><%= customization.company %></td>
+            <td><span style="color: <%= customization.ats_score >= 80 ? '#27ae60' : customization.ats_score >= 60 ? '#f39c12' : '#e74c3c' %>;">
+              <%= customization.ats_score %>%
+            </span></td>
+            <td><%= customization.created_at.strftime("%b %d, %H:%M") %></td>
+            <td><%= customization.platform&.humanize || 'Unknown' %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <p style="text-align: center; color: #7f8c8d; padding: 2rem;">
+      No AI customizations yet
+    </p>
+  <% end %>
+</div>
+
+<div style="margin-top: 1rem;">
+  <%= link_to "← Back to Users", simple_admin_users_path, class: "btn" %>
+  <%= link_to "Dashboard", simple_admin_dashboard_path, class: "btn" %>
+</div>

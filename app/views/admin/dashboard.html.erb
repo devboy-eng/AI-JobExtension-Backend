@@ -1,0 +1,58 @@
+<h1>Admin Dashboard</h1>
+
+<div class="stats-grid">
+  <div class="stat-card">
+    <h3>Total Users</h3>
+    <div class="number"><%= @total_users %></div>
+  </div>
+  
+  <div class="stat-card">
+    <h3>Users Today</h3>
+    <div class="number"><%= @users_today %></div>
+  </div>
+  
+  <div class="stat-card">
+    <h3>Users This Month</h3>
+    <div class="number"><%= @users_this_month %></div>
+  </div>
+  
+  <div class="stat-card">
+    <h3>Total Coins Distributed</h3>
+    <div class="number"><%= number_with_delimiter(@total_coins_distributed) %></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Recent Users</h2>
+  
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Email</th>
+        <th>Plan</th>
+        <th>Coins</th>
+        <th>Created</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @recent_users.each do |user| %>
+        <tr>
+          <td>#<%= user.id %></td>
+          <td><%= user.email %></td>
+          <td><span style="text-transform: capitalize;"><%= user.plan.humanize %></span></td>
+          <td><%= user.coin_balance %> coins</td>
+          <td><%= user.created_at.strftime("%b %d, %Y %H:%M") %></td>
+          <td>
+            <%= link_to "Manage Coins", simple_admin_user_coins_path(user), class: "btn btn-sm" %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+  
+  <div style="margin-top: 1rem;">
+    <%= link_to "View All Users", simple_admin_users_path, class: "btn" %>
+  </div>
+</div>

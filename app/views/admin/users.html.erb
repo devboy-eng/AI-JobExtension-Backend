@@ -1,0 +1,61 @@
+<h1>User Management</h1>
+
+<div class="card">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+    <h2>All Users (<%= @users.total_count if @users.respond_to?(:total_count) || @users.count %>)</h2>
+    
+    <%= form_with url: simple_admin_users_path, method: :get, local: true, style: "display: flex; gap: 0.5rem;" do |f| %>
+      <%= f.text_field :search, placeholder: "Search by email...", value: params[:search], style: "width: 250px;" %>
+      <%= f.submit "Search", class: "btn btn-sm" %>
+      <% if params[:search].present? %>
+        <%= link_to "Clear", simple_admin_users_path, class: "btn btn-sm" %>
+      <% end %>
+    <% end %>
+  </div>
+  
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Email</th>
+        <th>Plan</th>
+        <th>Coin Balance</th>
+        <th>Customizations</th>
+        <th>Created</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @users.each do |user| %>
+        <tr>
+          <td>#<%= user.id %></td>
+          <td><%= user.email %></td>
+          <td><span style="text-transform: capitalize; color: <%= user.plan == 'free' ? '#e67e22' : '#27ae60' %>;">
+            <%= user.plan.humanize %>
+          </span></td>
+          <td><strong><%= user.coin_balance %></strong> coins</td>
+          <td><%= user.customizations.count %> customizations</td>
+          <td><%= user.created_at.strftime("%b %d, %Y") %></td>
+          <td>
+            <%= link_to "Manage Coins", simple_admin_user_coins_path(user), class: "btn btn-sm" %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+  
+  <% if @users.respond_to?(:total_pages) && @users.total_pages > 1 %>
+    <div style="margin-top: 1rem; text-align: center;">
+      <!-- Simple pagination -->
+      <% if @users.prev_page %>
+        <%= link_to "Previous", simple_admin_users_path(page: @users.prev_page, search: params[:search]), class: "btn btn-sm" %>
+      <% end %>
+      
+      Page <%= @users.current_page %> of <%= @users.total_pages %>
+      
+      <% if @users.next_page %>
+        <%= link_to "Next", simple_admin_users_path(page: @users.next_page, search: params[:search]), class: "btn btn-sm" %>
+      <% end %>
+    </div>
+  <% end %>
+</div>
