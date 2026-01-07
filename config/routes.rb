@@ -3,7 +3,7 @@ Rails.application.routes.draw do
   root to: proc { [200, {}, ['AI Job Extension Backend API']] }
   
   # API routes for Chrome extension
-  namespace :api do
+  scope '/api' do
     # Profile routes
     get 'profile', to: 'auth#profile'
     post 'profile', to: 'auth#update_profile'
