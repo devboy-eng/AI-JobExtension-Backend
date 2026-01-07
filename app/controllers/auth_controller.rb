@@ -102,7 +102,7 @@ class AuthController < ApplicationController
           profile_table_exists: Profile.table_exists?,
           profile_data_column_exists: User.column_names.include?('profile_data'),
           has_profile_record: current_user.profile.present?,
-          profile_data_present: current_user.profile_data.present? rescue false
+          profile_data_present: (current_user.profile_data.present? rescue false)
         }
       end
       
