@@ -19,6 +19,7 @@ gem "pdf-reader"
 gem "ruby-openai"
 gem "httparty"
 gem "kaminari"
+gem "razorpay"
 
 group :development, :test do
   gem "byebug", platforms: [:mri, :windows]

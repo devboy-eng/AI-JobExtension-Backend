@@ -4,6 +4,7 @@ class User < ApplicationRecord
   # Job Extension specific associations
   has_many :resume_versions, dependent: :destroy
   has_many :customizations, dependent: :destroy
+  has_many :payment_orders, dependent: :destroy
   
   validates :email, presence: true, uniqueness: true, format: { with: URI::MailTo::EMAIL_REGEXP }
   validates :password, length: { minimum: 6 }, if: -> { password.present? }

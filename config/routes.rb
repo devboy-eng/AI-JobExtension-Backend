@@ -16,6 +16,13 @@ Rails.application.routes.draw do
     get 'coins/transactions', to: 'auth#coin_transactions'
     patch 'coins/balance', to: 'auth#update_coin_balance'
     
+    # Payment routes (Razorpay)
+    post 'payments/create-order', to: 'payments#create_order'
+    post 'payments/verify', to: 'payments#verify_payment'
+    post 'payments/webhook', to: 'payments#webhook'
+    get 'payments/history', to: 'payments#history'
+    get 'payments/test', to: 'payments#test_razorpay'
+    
     # Customization history routes
     get 'customization-history', to: 'auth#get_customization_history'
     post 'customization-history', to: 'auth#save_customization_history'
