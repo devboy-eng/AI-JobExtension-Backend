@@ -66,6 +66,18 @@ class User < ApplicationRecord
   def referral_code
     "REF#{id}#{email[0..2].upcase}" # Generate simple referral code
   end
+
+  def referral_link
+    "https://jobextension.kuposu.co?ref=#{referral_code}"
+  end
+
+  def total_referrals
+    0 # Placeholder since we removed referral tracking
+  end
+
+  def referral_earnings
+    0.0 # Placeholder since we removed referral tracking
+  end
   
   private
   
