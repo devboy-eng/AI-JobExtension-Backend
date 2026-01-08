@@ -6,6 +6,11 @@ class AiController < ApplicationController
   COINS_PER_CUSTOMIZATION = 10
   
   def customize
+    # Validate required parameters first
+    unless params[:resumeData].present? && params[:jobData].present?
+      return render_error('Missing required data: resumeData and jobData are required')
+    end
+    
     unless current_user.deduct_coins(COINS_PER_CUSTOMIZATION, 'AI resume customization')
       return render_error('Insufficient coins. You need 10 coins for AI customization.')
     end
@@ -17,54 +22,67 @@ class AiController < ApplicationController
       
       # Log the request for debugging
       Rails.logger.info "Starting AI customization for user #{current_user.id}"
-      Rails.logger.info "Job title: #{job_data[:title]}"
+      Rails.logger.info "Job title: #{job_data[:title] || 'Unknown'}"
+      Rails.logger.info "Company: #{job_data[:company] || 'Unknown'}"
       
-      # Call OpenAI API
-      raw_response = call_openai_api(resume_data, job_data)
+      # Validate essential data
+      if job_data[:description].blank? && job_data[:requirements].blank?
+        raise "Job description or requirements are required for customization"
+      end
+      
+      if resume_data[:name].blank? || resume_data[:email].blank?
+        raise "Resume must include name and email"
+      end
+      
+      # Call OpenAI API with retry logic
+      raw_response = call_openai_api_with_retry(resume_data, job_data)
       
       # Clean the response - remove markdown code blocks if present
       customized_resume = clean_html_response(raw_response)
+      
+      if customized_resume.blank?
+        raise "AI generated empty resume content"
+      end
       
       # Calculate ATS score and keywords
       ats_analysis = analyze_ats_compatibility(customized_resume, job_data)
       
       # Save customization history
-      customization = current_user.customizations.create!(
-        job_title: job_data[:title] || 'Unknown Job',
-        company: job_data[:company] || 'Unknown Company',
-        posting_url: job_data[:url],
-        platform: job_data[:platform] || 'unknown',
-        ats_score: ats_analysis[:score],
-        keywords_matched: ats_analysis[:matched],
-        keywords_missing: ats_analysis[:missing],
-        resume_content: customized_resume,
-        profile_snapshot: resume_data
-      )
+      customization = save_customization_history(job_data, ats_analysis, customized_resume, resume_data)
+      
+      Rails.logger.info "AI customization completed successfully for user #{current_user.id}"
       
       render_success({
         customizedContent: add_resume_styling(customized_resume),
         atsScore: ats_analysis[:score],
         keywordsMatched: ats_analysis[:matched],
         keywordsMissing: ats_analysis[:missing],
-        customizationId: customization.id,
-        cssStyles: get_resume_css_styles
+        customizationId: customization&.id,
+        cssStyles: get_resume_css_styles,
+        message: 'Resume customized successfully!'
       })
       
-    rescue Net::ReadTimeout, Net::OpenTimeout => e
+    rescue Net::ReadTimeout, Net::OpenTimeout, Timeout::Error => e
       # Refund coins on timeout
       current_user.add_coins(COINS_PER_CUSTOMIZATION, 'Refund for timeout')
-      Rails.logger.error "Timeout in AI customization: #{e.message}"
-      render_error("Request timed out. Please try again with a shorter job description.")
-    rescue => e
+      Rails.logger.error "Timeout in AI customization for user #{current_user.id}: #{e.message}"
+      render_error("Request timed out. The AI service is taking too long. Please try again with a shorter job description.")
+      
+    rescue StandardError => e
       # Refund coins on error
       current_user.add_coins(COINS_PER_CUSTOMIZATION, 'Refund for failed customization')
-      Rails.logger.error "AI customization failed: #{e.class} - #{e.message}"
+      Rails.logger.error "AI customization failed for user #{current_user.id}: #{e.class} - #{e.message}"
+      Rails.logger.error e.backtrace.join("\n") if e.backtrace
       
-      # Check if it's an aborted signal
-      if e.message.include?('aborted') || e.message.include?('signal')
-        render_error("Request was cancelled. This usually happens when the request takes too long. Please try again.")
+      # Check if it's an aborted signal or cancellation
+      if e.message.include?('aborted') || e.message.include?('signal') || e.message.include?('cancelled')
+        render_error("Request was cancelled or timed out. This usually happens when the request takes too long. Please try again with a shorter job description.")
+      elsif e.message.include?('API key')
+        render_error("AI service configuration error. Please try again later.")
+      elsif e.message.include?('timeout') || e.message.include?('timed out')
+        render_error("Request timed out. Please try again with a shorter job description.")
       else
-        render_error("AI customization failed: #{e.message}")
+        render_error("AI customization failed: #{e.message}. Please try again.")
       end
     end
   end
@@ -198,6 +216,47 @@ class AiController < ApplicationController
   end
   
   private
+  
+  def call_openai_api_with_retry(resume_data, job_data, max_retries = 2)
+    retries = 0
+    
+    begin
+      call_openai_api(resume_data, job_data)
+    rescue Net::ReadTimeout, Net::OpenTimeout, Timeout::Error => e
+      retries += 1
+      if retries <= max_retries
+        Rails.logger.warn "Retry #{retries}/#{max_retries} for OpenAI API call"
+        sleep(2) # Brief delay before retry
+        retry
+      else
+        raise e
+      end
+    end
+  end
+  
+  def save_customization_history(job_data, ats_analysis, customized_resume, resume_data)
+    begin
+      if Customization.table_exists?
+        current_user.customizations.create!(
+          job_title: job_data[:title] || 'Unknown Job',
+          company: job_data[:company] || 'Unknown Company',
+          posting_url: job_data[:url],
+          platform: job_data[:platform] || 'unknown',
+          ats_score: ats_analysis[:score],
+          keywords_matched: ats_analysis[:matched].to_s,
+          keywords_missing: ats_analysis[:missing].to_s,
+          resume_content: customized_resume,
+          profile_snapshot: resume_data.to_json
+        )
+      else
+        Rails.logger.warn "Customizations table doesn't exist, skipping history save"
+        nil
+      end
+    rescue => e
+      Rails.logger.error "Failed to save customization history: #{e.message}"
+      nil # Don't fail the whole request if history save fails
+    end
+  end
 
   def clean_html_response(response)
     # Remove markdown code blocks if present
@@ -253,7 +312,10 @@ class AiController < ApplicationController
     system_prompt = build_system_prompt
     user_prompt = build_user_prompt(resume_data, job_data)
     
+    Rails.logger.info "Making OpenAI API call for user #{current_user&.id}"
+    
     begin
+      # Set shorter timeout to prevent abort signals
       response = HTTParty.post(
         'https://api.openai.com/v1/chat/completions',
         headers: {
@@ -261,37 +323,65 @@ class AiController < ApplicationController
           'Content-Type' => 'application/json'
         },
         body: {
-          model: 'gpt-4o-mini',
+          model: 'gpt-4o-mini', # Fast model for better response times
           messages: [
             { role: 'system', content: system_prompt },
             { role: 'user', content: user_prompt }
           ],
-          max_tokens: 3000,
+          max_tokens: 2500, # Reduced for faster response
           temperature: 0.7
         }.to_json,
-        timeout: 50 # Set timeout to 50 seconds (under Render's limit)
+        timeout: 25, # Reduced timeout to 25 seconds
+        read_timeout: 25,
+        open_timeout: 10
       )
       
+      Rails.logger.info "OpenAI API response status: #{response.code}"
+      
       if response.success?
-        response.dig('choices', 0, 'message', 'content')
+        content = response.dig('choices', 0, 'message', 'content')
+        if content.blank?
+          raise "OpenAI returned empty content"
+        end
+        Rails.logger.info "OpenAI API call successful"
+        return content
       else
         error_body = JSON.parse(response.body) rescue response.body
+        Rails.logger.error "OpenAI API error response: #{error_body}"
+        
         if error_body.is_a?(Hash) && error_body['error']
           raise "OpenAI API error: #{error_body['error']['message']}"
         else
-          raise "OpenAI API error: #{response.body}"
+          raise "OpenAI API error: HTTP #{response.code} - #{response.body}"
         end
       end
-    rescue Net::ReadTimeout => e
-      Rails.logger.error "OpenAI timeout error: #{e.message}"
-      raise "Request timeout: The AI is taking too long to respond. Please try again with a simpler job description."
+      
+    rescue Net::ReadTimeout, Timeout::Error => e
+      Rails.logger.error "OpenAI timeout error: #{e.class} - #{e.message}"
+      raise "Request timeout: The AI service is taking too long to respond. Please try again."
+      
     rescue Net::OpenTimeout => e
       Rails.logger.error "OpenAI connection timeout: #{e.message}"
-      raise "Connection timeout: Unable to connect to OpenAI. Please try again."
-    rescue => e
-      Rails.logger.error "OpenAI API error: #{e.class} - #{e.message}"
-      Rails.logger.error e.backtrace.join("\n")
-      raise "AI customization error: #{e.message}"
+      raise "Connection timeout: Unable to connect to OpenAI. Please check your internet connection and try again."
+      
+    rescue HTTParty::Error, SocketError => e
+      Rails.logger.error "Network error: #{e.class} - #{e.message}"
+      raise "Network error: Unable to reach the AI service. Please try again."
+      
+    rescue JSON::ParserError => e
+      Rails.logger.error "JSON parsing error: #{e.message}"
+      raise "Invalid response from AI service. Please try again."
+      
+    rescue StandardError => e
+      Rails.logger.error "Unexpected error in OpenAI API call: #{e.class} - #{e.message}"
+      Rails.logger.error e.backtrace.join("\n") if e.backtrace
+      
+      # Handle abort signal specifically
+      if e.message.include?('aborted') || e.message.include?('signal') || e.message.include?('cancelled')
+        raise "Request was cancelled or timed out. Please try again with a shorter job description."
+      else
+        raise "AI service error: #{e.message}"
+      end
     end
   end
   
