@@ -7,17 +7,24 @@ Rails.application.routes.draw do
     # Profile routes
     get 'profile', to: 'auth#profile'
     post 'profile', to: 'auth#update_profile'
-    
+
     # Resume parsing routes
     post 'parse-resume', to: 'auth#parse_resume'
-    
+
     # Coin management routes
     get 'coins/balance', to: 'auth#coin_balance'
     get 'coins/transactions', to: 'auth#coin_transactions'
     patch 'coins/balance', to: 'auth#update_coin_balance'
+
+    # API v1 routes
+    namespace :v1 do
+      get 'coins/balance', to: 'coins#balance'
+      get 'coins/transactions', to: 'coins#transactions'
+    end
     
     # Payment routes (Razorpay)
     post 'payments/create-order', to: 'payments#create_order'
+    get 'payments/get-order/:id', to: 'payments#get_order'
     post 'payments/verify', to: 'payments#verify_payment'
     post 'payments/webhook', to: 'payments#webhook'
     get 'payments/history', to: 'payments#history'

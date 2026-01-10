@@ -568,11 +568,24 @@ class AuthController < ApplicationController
 
   def coin_transactions
     begin
-      # For now, return empty transactions as we don't have a transactions table yet
-      # This can be extended with a CoinTransaction model later
+      transactions = current_user.coin_transactions
+                                 .recent
+                                 .limit(params[:limit] || 50)
+
       render json: {
         success: true,
-        transactions: []
+        transactions: transactions.map do |transaction|
+          {
+            id: transaction.id,
+            amount: transaction.display_amount,
+            type: transaction.transaction_type,
+            description: transaction.description,
+            timestamp: transaction.created_at.iso8601,
+            created_at: transaction.created_at.iso8601,
+            razorpay_order_id: transaction.razorpay_order_id,
+            razorpay_payment_id: transaction.razorpay_payment_id
+          }.compact
+        end
       }
     rescue => e
       render json: {

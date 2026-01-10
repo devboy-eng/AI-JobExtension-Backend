@@ -5,6 +5,7 @@ class User < ApplicationRecord
   has_many :resume_versions, dependent: :destroy
   has_many :customizations, dependent: :destroy
   has_many :payment_orders, dependent: :destroy
+  has_many :coin_transactions, dependent: :destroy
   
   validates :email, presence: true, uniqueness: true, format: { with: URI::MailTo::EMAIL_REGEXP }
   validates :password, length: { minimum: 6 }, if: -> { password.present? }
@@ -29,16 +30,32 @@ class User < ApplicationRecord
   # Coin management methods
   def deduct_coins(amount, description = nil)
     return false if coin_balance < amount
-    
-    update!(coin_balance: coin_balance - amount)
+
+    ActiveRecord::Base.transaction do
+      update!(coin_balance: coin_balance - amount)
+      coin_transactions.create!(
+        amount: amount,
+        transaction_type: 'debit',
+        description: description || 'Coins deducted'
+      )
+    end
     true
   rescue => e
     Rails.logger.error "Error deducting coins for user #{id}: #{e.message}"
     false
   end
 
-  def add_coins(amount, description = nil)
-    update!(coin_balance: coin_balance + amount)
+  def add_coins(amount, description = nil, razorpay_order_id: nil, razorpay_payment_id: nil)
+    ActiveRecord::Base.transaction do
+      update!(coin_balance: coin_balance + amount)
+      coin_transactions.create!(
+        amount: amount,
+        transaction_type: 'credit',
+        description: description || 'Coins added',
+        razorpay_order_id: razorpay_order_id,
+        razorpay_payment_id: razorpay_payment_id
+      )
+    end
     true
   rescue => e
     Rails.logger.error "Error adding coins for user #{id}: #{e.message}"

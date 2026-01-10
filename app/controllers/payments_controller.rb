@@ -12,13 +12,13 @@ class PaymentsController < ApplicationController
       coins = calculate_coins(amount)
       
       # Validate parameters
-      if amount <= 0
-        return render json: { 
-          success: false, 
-          error: 'Invalid amount' 
+      if amount < 1
+        return render json: {
+          success: false,
+          error: 'Minimum amount is ₹1'
         }, status: :bad_request
       end
-      
+
       # Check if Razorpay keys are configured
       if ENV['RAZORPAY_KEY_ID'].blank? || ENV['RAZORPAY_KEY_SECRET'].blank?
         Rails.logger.error "Razorpay keys not configured"
@@ -34,7 +34,7 @@ class PaymentsController < ApplicationController
       # Create Razorpay order
       order_amount = amount * 100 # Convert to paisa
       receipt_id = "rcpt_#{current_user.id}_#{Time.now.to_i}"
-      
+
       razorpay_order = Razorpay::Order.create(
         amount: order_amount,
         currency: 'INR',
@@ -42,6 +42,8 @@ class PaymentsController < ApplicationController
         notes: {
           user_id: current_user.id,
           user_email: current_user.email,
+          phone_number: current_user.profile_data["phone"],
+          customer_name: current_user.profile_data["name"],
           coins: coins,
           custom_amount: params[:customAmount] || false
         }
@@ -71,7 +73,7 @@ class PaymentsController < ApplicationController
           prefill: {
             name: "#{current_user.first_name} #{current_user.last_name}".strip,
             email: current_user.email,
-            contact: current_user.phone || ''
+            contact: current_user.profile_data&.dig("phone") || ''
           },
           theme: {
             color: '#4F46E5'
@@ -84,7 +86,7 @@ class PaymentsController < ApplicationController
         coins: coins,
         payment_order_id: payment_order.id
       }
-      
+
     rescue Razorpay::Error => e
       Rails.logger.error "Razorpay error: #{e.message}"
       render json: { 
@@ -149,9 +151,14 @@ class PaymentsController < ApplicationController
         paid_at: Time.current
       )
       
-      # Credit coins to user
+      # Credit coins to user with transaction record
       user = payment_order.user
-      user.update!(coin_balance: (user.coin_balance || 0) + payment_order.coins)
+      user.add_coins(
+        payment_order.coins,
+        "Coins Purchased",
+        razorpay_order_id: order_id,
+        razorpay_payment_id: payment_id
+      )
       
       # Log the transaction
       Rails.logger.info "Payment successful: User #{user.id} credited with #{payment_order.coins} coins"
@@ -232,6 +239,62 @@ class PaymentsController < ApplicationController
     end
   end
   
+  # Get specific order details
+  def get_order
+    begin
+      payment_order = PaymentOrder.find_by(id: params[:id])
+
+      if payment_order.nil?
+        return render json: {
+          success: false,
+          error: 'Payment order not found'
+        }, status: :not_found
+      end
+
+      # Check if user owns this order
+      if payment_order.user_id != current_user.id
+        return render json: {
+          success: false,
+          error: 'Unauthorized access'
+        }, status: :unauthorized
+      end
+
+      render json: {
+        success: true,
+        order: {
+          id: payment_order.razorpay_order_id,
+          amount: payment_order.amount * 100, # Convert to paisa
+          currency: 'INR',
+          key_id: ENV['RAZORPAY_KEY_ID'],
+          name: 'Job Extension',
+          description: "Purchase #{payment_order.coins} coins",
+          prefill: {
+            name: "#{current_user.first_name} #{current_user.last_name}".strip,
+            email: current_user.email,
+            contact: current_user.profile_data&.dig("phone") || ''
+          },
+          theme: {
+            color: '#4F46E5'
+          },
+          modal: {
+            ondismiss: 'handlePaymentDismiss'
+          }
+        },
+        user_id: current_user.id,
+        coins: payment_order.coins,
+        payment_order_id: payment_order.id,
+        status: payment_order.status
+      }
+
+    rescue => e
+      Rails.logger.error "Get order failed: #{e.message}"
+      render json: {
+        success: false,
+        error: 'Failed to fetch order details'
+      }, status: :internal_server_error
+    end
+  end
+
   # Get payment history
   def history
     payment_orders = current_user.payment_orders
@@ -262,21 +325,7 @@ class PaymentsController < ApplicationController
   
   def calculate_coins(amount)
     # Pricing tiers
-    case amount
-    when 10
-      100   # ₹10 = 100 coins
-    when 50
-      600   # ₹50 = 600 coins (20% bonus)
-    when 100
-      1300  # ₹100 = 1300 coins (30% bonus)
-    when 500
-      7500  # ₹500 = 7500 coins (50% bonus)
-    when 1000
-      16000 # ₹1000 = 16000 coins (60% bonus)
-    else
-      # Custom amount: 10 coins per rupee
-      amount * 10
-    end
+    amount
   end
   
   def handle_payment_captured(payment_data)
@@ -296,8 +345,13 @@ class PaymentsController < ApplicationController
     # Credit coins if not already credited
     if payment_order.status_was != 'paid' && payment_order.status_was != 'captured'
       user = payment_order.user
-      user.update!(coin_balance: (user.coin_balance || 0) + payment_order.coins)
-      
+      user.add_coins(
+        payment_order.coins,
+        "Coins Purchased",
+        razorpay_order_id: payment_order.razorpay_order_id,
+        razorpay_payment_id: payment_id
+      )
+
       Rails.logger.info "Payment captured via webhook: User #{user.id} credited with #{payment_order.coins} coins"
     end
   end
@@ -328,8 +382,13 @@ class PaymentsController < ApplicationController
     # Credit coins if not already credited
     if payment_order.status_was != 'paid' && payment_order.status_was != 'captured'
       user = payment_order.user
-      user.update!(coin_balance: (user.coin_balance || 0) + payment_order.coins)
-      
+      user.add_coins(
+        payment_order.coins,
+        "Coins Purchased",
+        razorpay_order_id: order_id,
+        razorpay_payment_id: payment_order.razorpay_payment_id
+      )
+
       Rails.logger.info "Order paid via webhook: User #{user.id} credited with #{payment_order.coins} coins"
     end
   end

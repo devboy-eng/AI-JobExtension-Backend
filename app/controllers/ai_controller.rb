@@ -11,7 +11,7 @@ class AiController < ApplicationController
       return render_error('Missing required data: resumeData and jobData are required')
     end
     
-    unless current_user.deduct_coins(COINS_PER_CUSTOMIZATION, 'AI resume customization')
+    unless current_user.deduct_coins(COINS_PER_CUSTOMIZATION, 'Resume Customization')
       return render_error('Insufficient coins. You need 10 coins for AI customization.')
     end
     
@@ -328,12 +328,12 @@ class AiController < ApplicationController
             { role: 'system', content: system_prompt },
             { role: 'user', content: user_prompt }
           ],
-          max_tokens: 2500, # Reduced for faster response
+          max_tokens: 2000, # Reduced for faster response
           temperature: 0.7
         }.to_json,
-        timeout: 25, # Reduced timeout to 25 seconds
-        read_timeout: 25,
-        open_timeout: 10
+        timeout: 60, # Increased timeout to 60 seconds
+        read_timeout: 60,
+        open_timeout: 15
       )
       
       Rails.logger.info "OpenAI API response status: #{response.code}"

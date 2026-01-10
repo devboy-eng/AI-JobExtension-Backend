@@ -10,9 +10,25 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_01_10_061814) do
+ActiveRecord::Schema[7.1].define(version: 2026_01_10_154032) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "coin_transactions", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.integer "amount", null: false
+    t.string "transaction_type", null: false
+    t.string "description", null: false
+    t.string "razorpay_order_id"
+    t.string "razorpay_payment_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["razorpay_order_id"], name: "index_coin_transactions_on_razorpay_order_id"
+    t.index ["razorpay_payment_id"], name: "index_coin_transactions_on_razorpay_payment_id"
+    t.index ["transaction_type"], name: "index_coin_transactions_on_transaction_type"
+    t.index ["user_id", "created_at"], name: "index_coin_transactions_on_user_id_and_created_at"
+    t.index ["user_id"], name: "index_coin_transactions_on_user_id"
+  end
 
   create_table "customizations", force: :cascade do |t|
     t.bigint "user_id", null: false
@@ -87,6 +103,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_01_10_061814) do
     t.index ["profile_data"], name: "index_users_on_profile_data", using: :gin
   end
 
+  add_foreign_key "coin_transactions", "users"
   add_foreign_key "customizations", "users"
   add_foreign_key "payment_orders", "users"
   add_foreign_key "resume_versions", "users"
