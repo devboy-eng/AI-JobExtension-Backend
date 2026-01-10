@@ -74,34 +74,26 @@ class AuthController < ApplicationController
         email: current_user.email,
         first_name: current_user.first_name,
         last_name: current_user.last_name,
-        plan: current_user.plan,
-        referral_code: current_user.referral_code,
-        referral_link: current_user.referral_link,
-        total_referrals: current_user.total_referrals,
-        referral_earnings: current_user.referral_earnings
+        plan: current_user.plan
       }
       
-      # Get profile data from Profile model or profile_data column
+      # Get profile data from profile_data column (Profile model doesn't exist)
       profile_data = {}
       data_source = 'none'
-      
-      if Profile.table_exists? && current_user.profile.present?
-        profile_data = profile_to_hash(current_user.profile)
-        data_source = 'profile_model'
-      elsif User.column_names.include?('profile_data') && current_user.profile_data.present?
+
+      # Check if profile_data column exists and has data
+      if User.column_names.include?('profile_data') && current_user.profile_data.present?
         profile_data = current_user.profile_data
         data_source = 'profile_data_column'
       end
-      
+
       profile_response[:profile_data] = profile_data
-      
+
       # Add debug info in development
       if Rails.env.development?
         profile_response[:debug] = {
           data_source: data_source,
-          profile_table_exists: Profile.table_exists?,
           profile_data_column_exists: User.column_names.include?('profile_data'),
-          has_profile_record: current_user.profile.present?,
           profile_data_present: (current_user.profile_data.present? rescue false)
         }
       end
@@ -126,14 +118,9 @@ class AuthController < ApplicationController
       
       saved_data = {}
       data_source = 'none'
-      
-      # Try to use Profile model first
-      if Profile.table_exists? && update_profile_model(profile_fields)
-        saved_data = profile_to_hash(current_user.profile.reload)
-        data_source = 'profile_model'
-        Rails.logger.info "Profile saved to Profile model successfully"
-      elsif User.column_names.include?('profile_data')
-        # Store all profile fields in the profile_data JSON field
+
+      # Store all profile fields in the profile_data JSON field (Profile model doesn't exist)
+      if User.column_names.include?('profile_data')
         current_user.update!(profile_data: profile_fields.to_h)
         saved_data = current_user.reload.profile_data || {}
         data_source = 'profile_data_column'
@@ -155,7 +142,6 @@ class AuthController < ApplicationController
       if Rails.env.development?
         response[:debug] = {
           data_source: data_source,
-          profile_table_exists: Profile.table_exists?,
           profile_data_column_exists: User.column_names.include?('profile_data'),
           input_fields: profile_fields.to_h,
           saved_data: saved_data
@@ -1390,74 +1376,4 @@ class AuthController < ApplicationController
     education_entries
   end
 
-  # Helper methods for Profile model
-  def update_profile_model(profile_fields)
-    return false unless Profile.table_exists?
-    
-    begin
-      profile = current_user.profile || current_user.build_profile
-      
-      Rails.logger.info "Updating profile model for user #{current_user.id}"
-      
-      # Map the incoming parameters to profile attributes
-      profile.name = profile_fields[:name] || profile_fields['name']
-      profile.designation = profile_fields[:designation] || profile_fields['designation']
-      profile.email = profile_fields[:email] || profile_fields['email']
-      profile.phone = profile_fields[:phone] || profile_fields['phone']
-      profile.address = profile_fields[:address] || profile_fields['address']
-      profile.linkedin = profile_fields[:linkedin] || profile_fields['linkedin']
-      profile.skills = profile_fields[:skills] || profile_fields['skills']
-      profile.education = profile_fields[:education] || profile_fields['education']
-      profile.languages = profile_fields[:languages] || profile_fields['languages']
-      
-      # Handle arrays as JSON strings
-      work_exp = profile_fields[:workExperience] || profile_fields['workExperience'] || []
-      certs = profile_fields[:certificates] || profile_fields['certificates'] || []
-      
-      profile.work_experience = work_exp.to_json
-      profile.certificates = certs.to_json
-      
-      if profile.save
-        Rails.logger.info "Profile model saved successfully for user #{current_user.id}"
-        return true
-      else
-        Rails.logger.error "Profile model validation failed: #{profile.errors.full_messages.join(', ')}"
-        return false
-      end
-    rescue => e
-      Rails.logger.error "Error updating profile model for user #{current_user.id}: #{e.message}"
-      Rails.logger.error e.backtrace.join("\n")
-      return false
-    end
-  end
-  
-  def profile_to_hash(profile)
-    return {} unless profile
-    
-    work_experience = begin
-      JSON.parse(profile.work_experience || '[]')
-    rescue
-      []
-    end
-    
-    certificates = begin
-      JSON.parse(profile.certificates || '[]')
-    rescue
-      []
-    end
-    
-    {
-      name: profile.name,
-      designation: profile.designation,
-      email: profile.email,
-      phone: profile.phone,
-      address: profile.address,
-      linkedin: profile.linkedin,
-      skills: profile.skills,
-      education: profile.education,
-      languages: profile.languages,
-      workExperience: work_experience,
-      certificates: certificates
-    }
-  end
 end
