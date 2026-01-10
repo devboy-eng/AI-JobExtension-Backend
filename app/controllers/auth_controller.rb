@@ -356,14 +356,21 @@ class AuthController < ApplicationController
             profileSnapshot: version.profile_snapshot || {}
           }
         end
+
+        # Calculate statistics from user's resume versions
+        statistics = calculate_user_statistics(current_user)
       else
         # Fallback to in-memory storage
         user_id = current_user&.id || 'anonymous'
         user_history = @@customization_history[user_id] || []
+
+        # Calculate statistics from in-memory storage
+        statistics = calculate_statistics_from_memory(user_history)
       end
-      
+
       render json: {
         success: true,
+        statistics: statistics,
         history: user_history
       }
     rescue => e
@@ -393,7 +400,10 @@ class AuthController < ApplicationController
         # Keep only last 50 entries per user
         excess_versions = current_user.resume_versions.recent.offset(50)
         ResumeVersion.where(id: excess_versions.pluck(:id)).delete_all if excess_versions.any?
-        
+
+        # Update user statistics after saving new resume version
+        update_user_statistics(current_user)
+
         history_entry = {
           id: resume_version.id,
           jobTitle: resume_version.job_title,
@@ -1374,6 +1384,67 @@ class AuthController < ApplicationController
     end
     
     education_entries
+  end
+
+  # Statistics calculation methods
+  def calculate_user_statistics(user)
+    versions = user.resume_versions
+    total_resumes = versions.count
+
+    if total_resumes > 0
+      # Calculate average ATS score (excluding nil values)
+      scores = versions.where.not(ats_score: nil).pluck(:ats_score)
+      average_ats_score = scores.any? ? (scores.sum.to_f / scores.count).round(2) : 0.0
+
+      # Count unique companies
+      total_companies = versions.where.not(company: [nil, '']).distinct.count(:company)
+    else
+      average_ats_score = 0.0
+      total_companies = 0
+    end
+
+    {
+      totalResumes: total_resumes,
+      averageAtsScore: average_ats_score,
+      totalCompanies: total_companies
+    }
+  end
+
+  def calculate_statistics_from_memory(history)
+    total_resumes = history.length
+
+    if total_resumes > 0
+      # Calculate average ATS score (excluding nil values)
+      scores = history.map { |h| h[:atsScore] }.compact
+      average_ats_score = scores.any? ? (scores.sum.to_f / scores.count).round(2) : 0.0
+
+      # Count unique companies
+      companies = history.map { |h| h[:company] }.compact.uniq
+      total_companies = companies.count
+    else
+      average_ats_score = 0.0
+      total_companies = 0
+    end
+
+    {
+      totalResumes: total_resumes,
+      averageAtsScore: average_ats_score,
+      totalCompanies: total_companies
+    }
+  end
+
+  def update_user_statistics(user)
+    return unless User.column_names.include?('total_resumes')
+
+    statistics = calculate_user_statistics(user)
+
+    user.update_columns(
+      total_resumes: statistics[:totalResumes],
+      average_ats_score: statistics[:averageAtsScore],
+      total_companies: statistics[:totalCompanies]
+    )
+  rescue => e
+    Rails.logger.error "Error updating user statistics for user #{user.id}: #{e.message}"
   end
 
 end

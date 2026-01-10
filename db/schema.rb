@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_01_06_172000) do
+ActiveRecord::Schema[7.1].define(version: 2026_01_10_061814) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -31,6 +31,28 @@ ActiveRecord::Schema[7.1].define(version: 2026_01_06_172000) do
     t.index ["created_at"], name: "index_customizations_on_created_at"
     t.index ["job_title"], name: "index_customizations_on_job_title"
     t.index ["user_id"], name: "index_customizations_on_user_id"
+  end
+
+  create_table "payment_orders", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "razorpay_order_id", null: false
+    t.string "razorpay_payment_id"
+    t.string "razorpay_signature"
+    t.decimal "amount", precision: 10, scale: 2, null: false
+    t.integer "coins", null: false
+    t.string "currency", default: "INR", null: false
+    t.string "receipt"
+    t.integer "status", default: 0, null: false
+    t.datetime "paid_at"
+    t.json "metadata"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_at"], name: "index_payment_orders_on_created_at"
+    t.index ["razorpay_order_id"], name: "index_payment_orders_on_razorpay_order_id", unique: true
+    t.index ["razorpay_payment_id"], name: "index_payment_orders_on_razorpay_payment_id"
+    t.index ["status"], name: "index_payment_orders_on_status"
+    t.index ["user_id", "status"], name: "index_payment_orders_on_user_id_and_status"
+    t.index ["user_id"], name: "index_payment_orders_on_user_id"
   end
 
   create_table "resume_versions", force: :cascade do |t|
@@ -58,10 +80,14 @@ ActiveRecord::Schema[7.1].define(version: 2026_01_06_172000) do
     t.datetime "updated_at", null: false
     t.integer "coin_balance", default: 0
     t.jsonb "profile_data", default: {}
+    t.integer "total_resumes", default: 0
+    t.float "average_ats_score", default: 0.0
+    t.integer "total_companies", default: 0
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["profile_data"], name: "index_users_on_profile_data", using: :gin
   end
 
   add_foreign_key "customizations", "users"
+  add_foreign_key "payment_orders", "users"
   add_foreign_key "resume_versions", "users"
 end

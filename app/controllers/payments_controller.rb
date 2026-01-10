@@ -126,6 +126,7 @@ class PaymentsController < ApplicationController
         end
       end
       
+     
       # Initialize Razorpay and fetch payment details
       Razorpay.setup(ENV['RAZORPAY_KEY_ID'], ENV['RAZORPAY_KEY_SECRET'])
       payment = Razorpay::Payment.fetch(payment_id)
